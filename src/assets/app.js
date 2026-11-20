@@ -73,6 +73,8 @@
     minKB: h('Minimum KB', 'न्यूनतम KB'),
     maxKB: h('Maximum KB', 'अधिकतम KB'),
     dpi: h('DPI (optional)', 'DPI (वैकल्पिक)'),
+    side: h('Longest side (px)', 'सबसे लंबी साइड (px)'),
+    shape: h('keeps your image’s shape', 'इमेज का आकार वही रहता है'),
     privacy: h('Your image is processed on this device. It is never uploaded.', 'आपकी इमेज इसी डिवाइस पर बनती है। इसे कहीं अपलोड नहीं किया जाता।'),
     badFile: h('This image could not be opened. Try a JPG or PNG file. If your phone saves HEIC photos, take a screenshot of the photo and use that.',
       'यह इमेज नहीं खुली। JPG या PNG फ़ाइल आज़माएँ। अगर आपका फ़ोन HEIC फ़ोटो सेव करता है, तो फ़ोटो का स्क्रीनशॉट लेकर इस्तेमाल करें।'),
@@ -107,6 +109,7 @@
           <label>${S.minKB}<input type="number" inputmode="decimal" name="minKB" min="0" max="5000" step="any"></label>
           <label>${S.maxKB}<input type="number" inputmode="decimal" name="maxKB" min="1" max="5000" step="any"></label>
           <label>${S.dpi}<input type="number" inputmode="numeric" name="dpi" min="50" max="1200"></label>
+          <label class="adj-side">${S.side}<input type="number" inputmode="numeric" name="side" min="100" max="4000"></label>
         </div>
       </details>
       <div class="stage s-pick">
@@ -193,7 +196,13 @@
 
     function renderSpec() {
       const s = st.spec;
-      let t = `${s.w} × ${s.h} px · ${fmtNum(s.minKB)}–${fmtNum(s.maxKB)} KB · JPG`;
+      const kb = s.minKB > 0 ? `${fmtNum(s.minKB)}–${fmtNum(s.maxKB)} KB` : null;
+      if (s.free) {
+        const size = kb || h(`Under ${fmtNum(s.maxKB)} KB`, `${fmtNum(s.maxKB)} KB से कम`);
+        $('.spec').innerHTML = `${size} · JPG · ${S.shape}`;
+        return;
+      }
+      let t = `${s.w} × ${s.h} px · ${kb || `0–${fmtNum(s.maxKB)} KB`} · JPG`;
       if (s.size) t += ` · ${s.size}`;
       if (s.dpi) t += ` · ${s.dpi} DPI`;
       $('.spec').textContent = t;
@@ -202,15 +211,30 @@
     function fillAdjust() {
       const s = st.spec;
       const set = (n, v) => { $(`.adjust [name=${n}]`).value = v == null ? '' : v; };
-      set('w', s.w); set('h', s.h); set('minKB', s.minKB); set('maxKB', s.maxKB); set('dpi', s.dpi);
+      set('w', s.w); set('h', s.h); set('minKB', s.minKB); set('maxKB', s.maxKB); set('dpi', s.dpi); set('side', s.side);
+      ['w', 'h'].forEach((n) => { $(`.adjust [name=${n}]`).parentElement.hidden = !!s.free; });
+      $('.adj-side').hidden = !s.free;
+    }
+
+    // Free-shape mode: output keeps the image's proportions, longest side = spec.side.
+    function fitFree() {
+      const s = st.spec, iw = st.work.width, ih = st.work.height;
+      const k = Math.min(s.side, Math.max(iw, ih)) / Math.max(iw, ih);
+      s.w = Math.max(1, Math.round(iw * k));
+      s.h = Math.max(1, Math.round(ih * k));
     }
 
     el.querySelectorAll('.adjust input').forEach((inp) => inp.addEventListener('change', () => {
       const v = (n) => parseFloat($(`.adjust [name=${n}]`).value);
       const s = st.spec;
-      const w = Math.round(v('w')), hh = Math.round(v('h'));
-      if (w >= 20 && w <= 4000) s.w = w;
-      if (hh >= 20 && hh <= 4000) s.h = hh;
+      if (s.free) {
+        const side = Math.round(v('side'));
+        if (side >= 100 && side <= 4000) s.side = side;
+      } else {
+        const w = Math.round(v('w')), hh = Math.round(v('h'));
+        if (w >= 20 && w <= 4000) s.w = w;
+        if (hh >= 20 && hh <= 4000) s.h = hh;
+      }
       const mn = v('minKB'), mx = v('maxKB');
       if (mx > 0 && mx <= 5000) {
         s.maxKB = mx;
@@ -221,7 +245,9 @@
       delete s.size; // the printed size no longer applies
       fillAdjust();
       renderSpec();
-      if (st.work && !$('.s-edit').hidden) relayout();
+      if (st.work && !$('.s-edit').hidden) {
+        if (s.free) { fitFree(); layout(); resetView(); draw(); } else relayout();
+      }
     }));
 
     // ---- stages
@@ -255,6 +281,7 @@
         return;
       }
       recomputeWork();
+      if (st.spec.free) fitFree();
       show('s-edit');
       layout();
       resetView();
@@ -423,7 +450,7 @@
       if (!st.src) return;
       st.src = rotate90(st.src);
       recomputeWork();
-      bounds();
+      if (st.spec.free) { fitFree(); layout(); } else bounds();
       resetView();
       draw();
     });
@@ -462,7 +489,20 @@
       hideErrors();
       await nextFrame();
       try {
-        const res = await encodeJpeg(renderOutput(), st.spec);
+        let res;
+        if (st.spec.free) {
+          // Keep quality decent by shrinking the image instead of crushing it.
+          fitFree();
+          res = await encodeJpeg(renderOutput(), st.spec, 0.45);
+          for (let i = 0; res.tooBig && i < 14 && Math.max(st.spec.w, st.spec.h) > 80; i++) {
+            st.spec.w = Math.max(1, Math.round(st.spec.w * 0.82));
+            st.spec.h = Math.max(1, Math.round(st.spec.h * 0.82));
+            res = await encodeJpeg(renderOutput(), st.spec, 0.45);
+          }
+          if (res.tooBig) res = await encodeJpeg(renderOutput(), st.spec);
+        } else {
+          res = await encodeJpeg(renderOutput(), st.spec);
+        }
         if (res.tooBig) showError('s-edit', S.tooBig);
         else showResult(res);
       } catch (e) {
@@ -721,10 +761,9 @@
 
   // Highest quality that fits under the maximum, then padding up to the minimum.
   // Limits are checked against both KB definitions: min uses 1024 bytes, max uses 1000.
-  async function encodeJpeg(canvas, spec) {
-    const minB = spec.minKB > 0 ? Math.ceil(spec.minKB * 1024) + 256 : 0;
-    let maxB = Math.floor(spec.maxKB * 1000) - 256;
-    if (maxB <= minB + 512) maxB = Math.floor(spec.maxKB * 1024) - 64; // very narrow range
+  // `floor` is the lowest JPEG quality allowed before giving up (tooBig).
+  async function encodeJpeg(canvas, spec, floor) {
+    const { minB, maxB } = byteLimits(spec.minKB, spec.maxKB);
     let best = null;
     let b = await toJpeg(canvas, 0.92);
     if (b.size <= maxB) {
@@ -734,13 +773,13 @@
         if (b2.size <= maxB) best = b2;
       }
     } else {
-      let lo = 0.05, hi = 0.92;
+      let lo = floor || 0.05, hi = 0.92;
       for (let i = 0; i < 9; i++) {
         const q = (lo + hi) / 2;
         b = await toJpeg(canvas, q);
         if (b.size <= maxB) { best = b; lo = q; } else hi = q;
       }
-      if (!best) {
+      if (!best && !floor) {
         b = await toJpeg(canvas, 0.02);
         if (b.size <= maxB) best = b;
       }
@@ -750,6 +789,14 @@
     if (spec.dpi) bytes = setJfifDensity(bytes, spec.dpi);
     if (bytes.length < minB) bytes = padJpeg(bytes, Math.min(minB + 512, maxB) - bytes.length);
     return { blob: new Blob([bytes], { type: 'image/jpeg' }), bytes: bytes.length };
+  }
+
+  // Byte limits that satisfy both KB definitions: min uses 1024 bytes, max uses 1000.
+  function byteLimits(minKB, maxKB) {
+    const minB = minKB > 0 ? Math.ceil(minKB * 1024) + 256 : 0;
+    let maxB = Math.floor(maxKB * 1000) - 256;
+    if (maxB <= minB + 512) maxB = Math.floor(maxKB * 1024) - 64; // very narrow range
+    return { minB, maxB };
   }
 
   function setJfifDensity(bytes, dpi) {
@@ -810,4 +857,10 @@
     return m ? `${m[3]}/${m[2]}/${m[1]}` : '';
   }
   function fmtNum(n) { return Number.isInteger(n) ? String(n) : String(Math.round(n * 10) / 10); }
+
+  // Shared with other tools on the site (pdf.js).
+  window.SahiSize = {
+    h, decodeToCanvas, whiten, drawScaled, rotate90, makeCanvas, toJpeg, byteLimits, fmtNum, nextFrame,
+    LOAD_MAX_SIDE, privacyText: S.privacy, inAppText: S.inApp, badFileText: S.badFile,
+  };
 })();

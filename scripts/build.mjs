@@ -29,6 +29,7 @@ const VERSION = crypto.createHash('sha256')
   .update(fs.readFileSync(path.join(SRC, 'assets/app.js')))
   .update(fs.readFileSync(path.join(SRC, 'assets/style.css')))
   .update(fs.readFileSync(path.join(SRC, 'assets/lang.js')))
+  .update(fs.readFileSync(path.join(SRC, 'assets/pdf.js')))
   .update(JSON.stringify(data)).update(JSON.stringify(site))
   .digest('hex').slice(0, 10);
 
@@ -69,7 +70,7 @@ const toolConfig = (ex) => ({
 });
 
 // ------------------------------------------------------------------ layout
-function layout({ title, description, urlPath, depth, body, jsonld }) {
+function layout({ title, description, urlPath, depth, body, jsonld, scripts = [] }) {
   const root = depth ? '../'.repeat(depth) : './';
   const canonical = SITE_URL ? `<link rel="canonical" href="${SITE_URL}${urlPath}">` : '';
   const ogUrl = SITE_URL ? `<meta property="og:url" content="${SITE_URL}${urlPath}">` : '';
@@ -108,13 +109,16 @@ ${body}
 <footer>
   <nav>
     <a href="${root}">${h('All exams', 'सभी परीक्षाएँ')}</a>
+    <a href="${root}compress/20kb/">${h('Compress to KB', 'KB में कंप्रेस')}</a>
+    <a href="${root}pdf/">${h('Image to PDF', 'इमेज से PDF')}</a>
     <a href="${root}custom/">${h('Custom size', 'कस्टम साइज़')}</a>
     <a href="${root}privacy/">${h('Privacy', 'गोपनीयता')}</a>
   </nav>
-  <p>${h(`${esc(site.name)} is not affiliated with IBPS, SBI, SSC, RRB, UPSC, NTA, CBSE or any government body. Sizes are collected from public sources and were last checked on ${CHECKED}. Always check your official notification before you submit a form.`,
-    `${esc(site.name)} का IBPS, SBI, SSC, RRB, UPSC, NTA, CBSE या किसी भी सरकारी संस्था से कोई संबंध नहीं है। साइज़ सार्वजनिक स्रोतों से लिए गए हैं और आख़िरी बार ${CHECKED} को जाँचे गए। फ़ॉर्म जमा करने से पहले अपना आधिकारिक नोटिफ़िकेशन ज़रूर देखें।`)}</p>
+  <p>${h(`${esc(site.name)} is not affiliated with IBPS, SBI, SSC, RRB, UPSC, NTA, CBSE or any government body. Sizes marked “official” were checked against the official notification; the rest come from exam-guide sites. Last checked on ${CHECKED}. Always check your official notification before you submit a form.`,
+    `${esc(site.name)} का IBPS, SBI, SSC, RRB, UPSC, NTA, CBSE या किसी भी सरकारी संस्था से कोई संबंध नहीं है। “आधिकारिक” चिह्न वाले साइज़ आधिकारिक नोटिफ़िकेशन से जाँचे गए हैं, बाक़ी एग्ज़ाम-गाइड वेबसाइटों से लिए गए हैं। आख़िरी जाँच ${CHECKED} को। फ़ॉर्म जमा करने से पहले अपना आधिकारिक नोटिफ़िकेशन ज़रूर देखें।`)}</p>
 </footer>
 <script src="${root}assets/app.js?v=${VERSION}" defer></script>
+${scripts.map((s) => `<script src="${root}${s}?v=${VERSION}" defer></script>`).join('\n')}
 </body>
 </html>
 `;
@@ -134,7 +138,7 @@ const docSummary = (ex) => ({
     if (!list.length) return '';
     return `<h3>${hx(c)}</h3>
 <div class="grid">
-${list.map((e) => `  <a class="card" href="exam/${e.slug}/"><strong>${hx(e.name)}</strong>${hx(docSummary(e))}</a>`).join('\n')}
+${list.map((e) => `  <a class="card" href="exam/${e.slug}/"><strong>${hx(e.name)}</strong>${hx(docSummary(e))}${e.verified ? `<em class="tick">✓ ${h('Official sizes', 'आधिकारिक साइज़')}</em>` : ''}</a>`).join('\n')}
 </div>`;
   }).join('\n');
   const body = `
@@ -146,6 +150,13 @@ ${list.map((e) => `  <a class="card" href="exam/${e.slug}/"><strong>${hx(e.name)
   <li>${h('Works offline', 'बिना इंटरनेट भी चलता है')}</li>
   <li>${h('Your photo never leaves your phone', 'फ़ोटो आपके फ़ोन से बाहर नहीं जाती')}</li>
 </ul>
+<h2>${h('Quick tools', 'झटपट टूल')}</h2>
+<div class="grid">
+  <a class="card" href="compress/20kb/"><strong>${h('Compress to KB', 'KB में कंप्रेस करें')}</strong>${h('Photo under 10, 20, 50, 100 KB…', 'फ़ोटो 10, 20, 50, 100 KB से कम…')}</a>
+  <a class="card" href="pdf/"><strong>${h('Image to PDF', 'इमेज से PDF')}</strong>${h('Certificates as PDF under a KB limit', 'प्रमाण पत्र, KB सीमा वाली PDF में')}</a>
+  <a class="card" href="compress/signature-10-20kb/"><strong>${h('Signature 10–20 KB', 'हस्ताक्षर 10–20 KB')}</strong>${h('Clean white background', 'साफ़ सफ़ेद बैकग्राउंड')}</a>
+  <a class="card" href="custom/"><strong>${h('Custom size', 'कस्टम साइज़')}</strong>${h('Any pixels and KB', 'कोई भी पिक्सेल और KB')}</a>
+</div>
 <h2>${h('Choose your exam', 'अपनी परीक्षा चुनें')}</h2>
 ${cats}
 <h3>${h('Other forms', 'अन्य फ़ॉर्म')}</h3>
@@ -179,7 +190,18 @@ ${cats}
 for (const ex of data.exams) {
   const urlPath = `exam/${ex.slug}/`;
   const noun = toolNoun(ex);
-  const rows = ex.docs.map((d) => `<tr><td>${hx(d.label)}</td><td class="nw">${d.w} × ${d.h} px${d.size ? `<br><span class="muted">${esc(d.size)}</span>` : ''}</td><td class="nw">${kbRange(d)}</td><td>JPG${d.dpi ? `, ${d.dpi} DPI` : ''}</td></tr>`).join('\n');
+  const rows = ex.docs.map((d) => {
+    const extra = [d.size ? esc(d.size) : '', d.dpi ? `${d.dpi} DPI` : ''].filter(Boolean).join(' · ');
+    return `<tr><td>${hx(d.label)}<br><span class="muted">JPG</span></td><td class="nw">${d.w} × ${d.h} px${extra ? `<br><span class="muted">${extra}</span>` : ''}</td><td class="nw">${kbRange(d)}</td></tr>`;
+  }).join('\n');
+  const pdfRows = (ex.pdfs || []).map((d) => {
+    const kb = d.minKB > 0 ? `${d.minKB}–${d.maxKB} KB` : h(`Up to ${d.maxKB} KB`, `${d.maxKB} KB तक`);
+    const link = `../../pdf/?min=${d.minKB}&amp;max=${d.maxKB}&amp;name=${encodeURIComponent(`${ex.slug}-${d.name}`)}`;
+    return `<tr><td>${hx(d)}<br><span class="muted">PDF</span> · <a href="${link}">${h('Make PDF', 'PDF बनाएँ')} →</a></td><td class="nw">A4</td><td class="nw">${kb}</td></tr>`;
+  }).join('\n');
+  const badge = ex.verified
+    ? `<p class="verified">✓ ${h('Checked against the official notification:', 'आधिकारिक नोटिफ़िकेशन से जाँचा गया:')} <a href="${esc(ex.verified.url)}" target="_blank" rel="noopener">${esc(ex.verified.title)}</a></p>`
+    : `<p class="unverified">⚠ ${h('Not yet checked against the official notification. These sizes come from exam-guide sites, so please confirm them in your notice.', 'अभी आधिकारिक नोटिफ़िकेशन से नहीं जाँचा गया। ये साइज़ एग्ज़ाम-गाइड वेबसाइटों से लिए गए हैं, कृपया अपने नोटिस में पुष्टि करें।')}</p>`;
   const tips = hasScan(ex) ? `<li>${h('For signatures and impressions, use plain white paper. Take the photo in daylight from straight above and avoid your phone’s shadow.', 'हस्ताक्षर और निशान के लिए सादा सफ़ेद कागज़ लें। दिन की रोशनी में ठीक ऊपर से फ़ोटो खींचें और फ़ोन की परछाईं से बचें।')}</li>` : '';
   const others = data.exams.filter((e) => e.slug !== ex.slug)
     .map((e) => `<a href="../${e.slug}/">${hx(e.name)}</a>`).join('\n');
@@ -189,13 +211,15 @@ for (const ex of data.exams) {
 <h1>${h(`${esc(ex.name.en)} ${noun.en}`, `${esc(ex.name.hi)} ${noun.hi}`)}</h1>
 <p class="lead">${hx(ex.covers)}</p>
 <p class="checked">${h(`Last checked ${CHECKED}`, `आख़िरी जाँच ${CHECKED}`)} · <a href="${esc(ex.official)}" target="_blank" rel="noopener">${h('Official website', 'आधिकारिक वेबसाइट')} ↗</a></p>
+${badge}
 <div id="tool" class="tool"><p class="muted">${h('Loading the resizer…', 'रिसाइज़र लोड हो रहा है…')}</p></div>
 ${jsonScript('tool-config', toolConfig(ex))}
 <h2>${h(`${esc(ex.name.en)} size rules`, `${esc(ex.name.hi)} साइज़ नियम`)}</h2>
 <div class="table-wrap"><table>
-<thead><tr><th>${h('Document', 'दस्तावेज़')}</th><th>${h('Pixels', 'पिक्सेल')}</th><th>${h('File size', 'फ़ाइल साइज़')}</th><th>${h('Format', 'फ़ॉर्मेट')}</th></tr></thead>
+<thead><tr><th>${h('Document', 'दस्तावेज़')}</th><th>${h('Size', 'साइज़')}</th><th>${h('File size', 'फ़ाइल साइज़')}</th></tr></thead>
 <tbody>
 ${rows}
+${pdfRows}
 </tbody>
 </table></div>
 <h2>${h('Important', 'ज़रूरी बातें')}</h2>
@@ -211,8 +235,11 @@ ${ex.notes.map((n) => `<li>${hx(n)}</li>`).join('\n')}
 </ol>
 <section class="sources">
 <h2>${h('Sources', 'स्रोत')}</h2>
-<p>${h(`Last checked ${CHECKED}. These sizes come from exam-guide sites that summarise the latest notifications. They can change with every new notification, so always confirm them in the official notification on the <a href="${esc(ex.official)}" target="_blank" rel="noopener">official website</a>.`,
-    `आख़िरी जाँच ${CHECKED}। ये साइज़ उन एग्ज़ाम-गाइड वेबसाइटों से लिए गए हैं जो नए नोटिफ़िकेशन का सार देती हैं। हर नए नोटिफ़िकेशन के साथ ये बदल सकते हैं, इसलिए <a href="${esc(ex.official)}" target="_blank" rel="noopener">आधिकारिक वेबसाइट</a> पर नोटिफ़िकेशन में ज़रूर पुष्टि करें।`)}</p>
+<p>${ex.verified
+    ? h(`Last checked ${CHECKED} against the official document listed first below. Sizes can change with every new notification, so check the latest one on the <a href="${esc(ex.official)}" target="_blank" rel="noopener">official website</a>.`,
+      `आख़िरी जाँच ${CHECKED} को, नीचे दिए पहले आधिकारिक दस्तावेज़ से। हर नए नोटिफ़िकेशन के साथ साइज़ बदल सकते हैं, इसलिए <a href="${esc(ex.official)}" target="_blank" rel="noopener">आधिकारिक वेबसाइट</a> पर नया नोटिफ़िकेशन ज़रूर देखें।`)
+    : h(`Last checked ${CHECKED}. These sizes come from exam-guide sites that summarise the latest notifications. They can change with every new notification, so always confirm them in the official notification on the <a href="${esc(ex.official)}" target="_blank" rel="noopener">official website</a>.`,
+      `आख़िरी जाँच ${CHECKED}। ये साइज़ उन एग्ज़ाम-गाइड वेबसाइटों से लिए गए हैं जो नए नोटिफ़िकेशन का सार देती हैं। हर नए नोटिफ़िकेशन के साथ ये बदल सकते हैं, इसलिए <a href="${esc(ex.official)}" target="_blank" rel="noopener">आधिकारिक वेबसाइट</a> पर नोटिफ़िकेशन में ज़रूर पुष्टि करें।`)}</p>
 <ul>
 ${ex.sources.map((u) => `<li><a href="${esc(u)}" target="_blank" rel="nofollow noopener">${esc(u.replace(/^https?:\/\/(www\.)?/, ''))}</a></li>`).join('\n')}
 </ul>
@@ -260,6 +287,9 @@ ${jsonScript('tool-config', cfg)}
     }),
   });
 }
+
+// Compress-to-KB and PDF pages
+buildToolPages();
 
 // Privacy
 {
@@ -328,7 +358,7 @@ fs.writeFileSync(path.join(OUT, 'manifest.webmanifest'), JSON.stringify({
 
 const precache = [
   ...pages.map((p) => p.urlPath),
-  `assets/style.css?v=${VERSION}`, `assets/lang.js?v=${VERSION}`, `assets/app.js?v=${VERSION}`,
+  `assets/style.css?v=${VERSION}`, `assets/lang.js?v=${VERSION}`, `assets/app.js?v=${VERSION}`, `assets/pdf.js?v=${VERSION}`,
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png',
 ];
 fs.writeFileSync(path.join(OUT, 'sw.js'), `// Generated by scripts/build.mjs
@@ -375,5 +405,110 @@ function copyDir(from, to) {
   for (const f of fs.readdirSync(from, { withFileTypes: true })) {
     const a = path.join(from, f.name), b = path.join(to, f.name);
     if (f.isDirectory()) copyDir(a, b); else fs.copyFileSync(a, b);
+  }
+}
+
+// ------------------------------------------------------------------ tool pages
+function buildToolPages() {
+  const examLinks = (up) => data.exams.map((e) => `<a href="${up}exam/${e.slug}/">${hx(e.name)}</a>`).join('\n');
+  const COMPRESS = [
+    { slug: '10kb', max: 10 }, { slug: '20kb', max: 20 }, { slug: '30kb', max: 30 }, { slug: '50kb', max: 50 },
+    { slug: '100kb', max: 100 }, { slug: '200kb', max: 200 }, { slug: '500kb', max: 500 },
+    { slug: '20-50kb', min: 20, max: 50 },
+    { slug: 'signature-10-20kb', min: 10, max: 20, scan: true },
+  ];
+  const sideFor = (c) => (c.scan ? 600 : c.max <= 20 ? 700 : c.max <= 50 ? 1000 : c.max <= 200 ? 1500 : 2000);
+  const nameOf = (c) => {
+    if (c.scan) return { en: `Resize signature to ${c.min}–${c.max} KB`, hi: `हस्ताक्षर को ${c.min}–${c.max} KB में बदलें` };
+    if (c.min) return { en: `Resize photo to ${c.min}–${c.max} KB`, hi: `फ़ोटो को ${c.min}–${c.max} KB में बदलें` };
+    return { en: `Compress photo to ${c.max} KB`, hi: `फ़ोटो को ${c.max} KB में कंप्रेस करें` };
+  };
+  const chip = (c) => (c.scan ? h(`Signature ${c.min}–${c.max} KB`, `हस्ताक्षर ${c.min}–${c.max} KB`) : c.min ? `${c.min}–${c.max} KB` : h(`Under ${c.max} KB`, `${c.max} KB से कम`));
+
+  for (const c of COMPRESS) {
+    const urlPath = `compress/${c.slug}/`;
+    const nm = nameOf(c);
+    const cfg = {
+      slug: `compress-${c.slug}`,
+      docs: [{
+        type: c.scan ? 'signature' : 'custom', kind: c.scan ? 'scan' : 'any', free: true, side: sideFor(c),
+        label: c.scan ? { en: T.signature.en, hi: T.signature.hi } : { en: T.custom.en, hi: T.custom.hi },
+        w: sideFor(c), h: sideFor(c), minKB: c.min || 0, maxKB: c.max, file: c.scan ? `signature-${c.min}-${c.max}kb` : `photo-${c.slug}`,
+      }],
+    };
+    const lead = c.scan
+      ? h(`Turn a phone photo of your signature into a clean ${c.min}–${c.max} KB JPG with a white background. Nothing is uploaded.`, `अपने हस्ताक्षर की फ़ोन से खींची फ़ोटो को सफ़ेद बैकग्राउंड वाली साफ़ ${c.min}–${c.max} KB की JPG में बदलें। कुछ भी अपलोड नहीं होता।`)
+      : c.min
+        ? h(`Make any photo between ${c.min} KB and ${c.max} KB in a few seconds. It keeps its shape, and nothing is uploaded.`, `किसी भी फ़ोटो को कुछ सेकंड में ${c.min} KB से ${c.max} KB के बीच बनाएँ। आकार वही रहता है और कुछ भी अपलोड नहीं होता।`)
+        : h(`Make any photo smaller than ${c.max} KB in a few seconds. It keeps its shape; if needed, the pixel size is reduced so it fits. Nothing is uploaded.`, `किसी भी फ़ोटो को कुछ सेकंड में ${c.max} KB से छोटा बनाएँ। आकार वही रहता है; ज़रूरत हो तो पिक्सेल साइज़ कम किया जाता है। कुछ भी अपलोड नहीं होता।`);
+    const body = `
+<nav class="crumbs"><a href="../../">${h('Home', 'होम')}</a> › ${h('Compress to KB', 'KB में कंप्रेस')}</nav>
+<h1>${hx(nm)}</h1>
+<p class="lead">${lead}</p>
+<div class="other">
+${COMPRESS.map((o) => (o === c ? `<a class="current" aria-current="page" href="./">${chip(o)}</a>` : `<a href="../${o.slug}/">${chip(o)}</a>`)).join('\n')}
+</div>
+<div id="tool" class="tool"><p class="muted">${h('Loading…', 'लोड हो रहा है…')}</p></div>
+${jsonScript('tool-config', cfg)}
+<h2>${h('How to use', 'कैसे इस्तेमाल करें')}</h2>
+<ol class="steps">
+  <li>${h('Choose a photo from your gallery or take a new one.', 'गैलरी से फ़ोटो चुनें या नई फ़ोटो खींचें।')}</li>
+  <li>${h('Zoom in if you want to cut away the edges.', 'किनारे हटाने हों तो ज़ूम करें।')}</li>
+  <li>${h('Tap “Make my file”, then download it.', '“मेरी फ़ाइल बनाएँ” दबाएँ, फिर डाउनलोड करें।')}</li>
+</ol>
+<h2>${h('Good to know', 'ज़रूरी बातें')}</h2>
+<ul class="notes">
+  <li>${h('If your form also fixes the pixel size (for example 200 × 230 px), use your exam’s page or the custom size tool instead, so the shape is right too.', 'अगर आपका फ़ॉर्म पिक्सेल साइज़ भी तय करता है (जैसे 200 × 230 px), तो अपनी परीक्षा का पेज या कस्टम साइज़ टूल इस्तेमाल करें, ताकि आकार भी सही रहे।')}</li>
+  <li>${h('We count 1 KB as 1000 bytes for the maximum and 1024 bytes for the minimum, so the file passes either way the form counts it.', 'अधिकतम सीमा के लिए हम 1 KB = 1000 बाइट और न्यूनतम के लिए 1024 बाइट मानते हैं, ताकि फ़ॉर्म किसी भी तरह गिने, फ़ाइल सही रहे।')}</li>
+  <li>${h('Need a PDF instead? Use <a href="../../pdf/">image to PDF</a>.', 'PDF चाहिए? <a href="../../pdf/">इमेज से PDF</a> इस्तेमाल करें।')}</li>
+</ul>
+<h2>${h('Exam presets', 'परीक्षा प्रीसेट')}</h2>
+<div class="other">
+${examLinks('../../')}
+</div>`;
+    pages.push({
+      urlPath, depth: 2,
+      html: layout({
+        title: c.scan ? `Resize Signature to ${c.min}-${c.max} KB Online (White Background) | ${site.name}`
+          : c.min ? `Resize Photo to ${c.min}-${c.max} KB Online, Free | ${site.name}` : `Compress Photo to ${c.max} KB Online, Free | ${site.name}`,
+        description: c.scan ? `Resize your signature to ${c.min}-${c.max} KB JPG with a clean white background for any exam form. Free, private, works offline.`
+          : `${c.min ? `Resize any photo to ${c.min}-${c.max} KB` : `Compress any photo to under ${c.max} KB`} in seconds. Free, works offline, your photo is never uploaded. Hindi and English.`,
+        urlPath, depth: 2, body,
+      }),
+    });
+  }
+
+  // Image to PDF
+  {
+    const body = `
+<nav class="crumbs"><a href="../">${h('Home', 'होम')}</a> › ${h('Image to PDF', 'इमेज से PDF')}</nav>
+<h1>${h('Image to PDF under a KB limit', 'इमेज से PDF, KB सीमा के अंदर')}</h1>
+<p class="lead">${h('Turn photos of your certificates, marksheets or ID into one A4 PDF that fits the form’s limit, for example 50–300 KB for NEET and JEE or up to 500 KB for IBPS. Nothing is uploaded.',
+    'अपने प्रमाण पत्र, मार्कशीट या ID की फ़ोटो को एक A4 PDF में बदलें, जो फ़ॉर्म की सीमा में आए, जैसे NEET और JEE के लिए 50–300 KB या IBPS के लिए 500 KB तक। कुछ भी अपलोड नहीं होता।')}</p>
+<div id="pdftool" class="tool"><p class="muted">${h('Loading…', 'लोड हो रहा है…')}</p></div>
+<h2>${h('How to use', 'कैसे इस्तेमाल करें')}</h2>
+<ol class="steps">
+  <li>${h('Pick the KB limit your form asks for, or type your own.', 'अपने फ़ॉर्म की KB सीमा चुनें या ख़ुद लिखें।')}</li>
+  <li>${h('Add one image per page. Use ↑ to change the order and ↻ to turn a page.', 'हर पेज के लिए एक इमेज जोड़ें। क्रम बदलने के लिए ↑ और पेज घुमाने के लिए ↻ दबाएँ।')}</li>
+  <li>${h('Tap “Make PDF”, check the green ticks and download.', '“PDF बनाएँ” दबाएँ, हरे टिक देखें और डाउनलोड करें।')}</li>
+</ol>
+<h2>${h('Tips for clear documents', 'साफ़ दस्तावेज़ के लिए सुझाव')}</h2>
+<ul class="notes">
+  <li>${h('Lay the document flat, take the photo from straight above in daylight, and fill the screen with the page.', 'दस्तावेज़ को सीधा रखें, दिन की रोशनी में ठीक ऊपर से फ़ोटो खींचें और पेज को पूरी स्क्रीन में भरें।')}</li>
+  <li>${h('Keep “Make background white” on for phone photos. Turn it off for colour documents such as photo ID cards.', 'फ़ोन से खींची फ़ोटो के लिए “बैकग्राउंड सफ़ेद करें” चालू रखें। फ़ोटो वाले ID कार्ड जैसे रंगीन दस्तावेज़ों के लिए इसे बंद करें।')}</li>
+  <li>${h('If the PDF is too blurry, raise the KB limit if your form allows it, or use fewer pages.', 'अगर PDF बहुत धुंधली है, तो फ़ॉर्म अनुमति दे तो KB सीमा बढ़ाएँ, या कम पेज रखें।')}</li>
+</ul>
+<h2>${h('Exam presets', 'परीक्षा प्रीसेट')}</h2>
+<div class="other">
+${examLinks('../')}
+</div>`;
+    pages.push({
+      urlPath: 'pdf/', depth: 1,
+      html: layout({
+        title: `JPG to PDF Under 300 KB / 500 KB for Exam Forms | ${site.name}`,
+        description: 'Convert photos of certificates and marksheets into one A4 PDF under any KB limit (50-300 KB for NEET/JEE, 500 KB for IBPS). Free, private, works offline.',
+        urlPath: 'pdf/', depth: 1, body, scripts: ['assets/pdf.js'],
+      }),
+    });
   }
 }

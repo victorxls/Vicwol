@@ -21,6 +21,7 @@ See [docs/PLAN.md](docs/PLAN.md) for the roadmap and money plan.
 | `data/site.json` | Site name, tagline, contact email |
 | `src/assets/app.js` | The resizer: crop/zoom, background whitening, JPEG encoding to a KB range |
 | `src/assets/style.css` | Styles (light and dark) |
+| `src/assets/pdf.js` | Images to an A4 PDF under a KB limit (hand-written PDF, no library) |
 | `src/assets/lang.js` | Picks Hindi or English before the page paints |
 | `src/icons/` | App icon (SVG source + PNGs from `scripts/make-icons.cjs`) |
 | `scripts/build.mjs` | Generates every page into `dist/` (no dependencies) |
@@ -39,7 +40,9 @@ To preview locally, serve `dist/` with any static server, for example `python3 -
 
 Edit its entry in `data/exams.json`, then update `lastChecked` at the top of the file. Each
 document needs `type`, `w`, `h`, `minKB` and `maxKB`; `dpi`, `size` (the printed size, e.g.
-"3.5 × 4.5 cm") and `file` (download file name) are optional. When sources disagree on a limit,
+"3.5 × 4.5 cm") and `file` (download file name) are optional. `pdfs` lists PDF uploads (they link
+to the PDF tool with the limits filled in). Set `verified` (`date`, `title`, `url`) only after
+checking the official notification; the page then shows a green "checked" badge. When sources disagree on a limit,
 use the range that satisfies all of them and say so in `notes`. Add the notification or source
 URL to `sources`.
 

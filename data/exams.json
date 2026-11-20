@@ -1,83 +1,274 @@
 {
   "lastChecked": "2026-11-20",
-  "verification": "Collected from coaching and exam-news sites that summarise the 2026 notifications. Not yet checked against each official notification PDF.",
+  "verification": "Exams marked verified were checked against the official notification or information bulletin on the date shown. Others are collected from exam-guide sites that summarise the notifications.",
   "docTypes": {
-    "photo": { "kind": "photo", "en": "Photo", "hi": "फ़ोटो" },
-    "postcard": { "kind": "photo", "en": "Postcard-size photo", "hi": "पोस्टकार्ड साइज़ फ़ोटो" },
-    "signature": { "kind": "scan", "en": "Signature", "hi": "हस्ताक्षर" },
-    "thumb": { "kind": "scan", "en": "Left thumb impression", "hi": "बाएँ अँगूठे का निशान" },
-    "fingers": { "kind": "scan", "en": "Finger & thumb impressions", "hi": "उँगलियों और अँगूठे के निशान" },
-    "declaration": { "kind": "scan", "en": "Handwritten declaration", "hi": "हस्तलिखित घोषणा" },
-    "custom": { "kind": "any", "en": "Custom size", "hi": "कस्टम साइज़" }
+    "photo": {
+      "kind": "photo",
+      "en": "Photo",
+      "hi": "फ़ोटो"
+    },
+    "postcard": {
+      "kind": "photo",
+      "en": "Postcard-size photo",
+      "hi": "पोस्टकार्ड साइज़ फ़ोटो"
+    },
+    "signature": {
+      "kind": "scan",
+      "en": "Signature",
+      "hi": "हस्ताक्षर"
+    },
+    "thumb": {
+      "kind": "scan",
+      "en": "Left thumb impression",
+      "hi": "बाएँ अँगूठे का निशान"
+    },
+    "fingers": {
+      "kind": "scan",
+      "en": "Finger & thumb impressions",
+      "hi": "उँगलियों और अँगूठे के निशान"
+    },
+    "declaration": {
+      "kind": "scan",
+      "en": "Handwritten declaration",
+      "hi": "हस्तलिखित घोषणा"
+    },
+    "custom": {
+      "kind": "any",
+      "en": "Custom size",
+      "hi": "कस्टम साइज़"
+    }
   },
   "categories": [
-    { "id": "banking", "en": "Banking", "hi": "बैंकिंग" },
-    { "id": "ssc", "en": "SSC", "hi": "SSC" },
-    { "id": "railway", "en": "Railway", "hi": "रेलवे" },
-    { "id": "upsc", "en": "UPSC", "hi": "UPSC" },
-    { "id": "entrance", "en": "Entrance exams (NTA)", "hi": "प्रवेश परीक्षाएँ (NTA)" },
-    { "id": "teaching", "en": "Teaching", "hi": "शिक्षक भर्ती" }
+    {
+      "id": "banking",
+      "en": "Banking",
+      "hi": "बैंकिंग"
+    },
+    {
+      "id": "ssc",
+      "en": "SSC",
+      "hi": "SSC"
+    },
+    {
+      "id": "railway",
+      "en": "Railway",
+      "hi": "रेलवे"
+    },
+    {
+      "id": "upsc",
+      "en": "UPSC",
+      "hi": "UPSC"
+    },
+    {
+      "id": "entrance",
+      "en": "Entrance exams (NTA)",
+      "hi": "प्रवेश परीक्षाएँ (NTA)"
+    },
+    {
+      "id": "teaching",
+      "en": "Teaching",
+      "hi": "शिक्षक भर्ती"
+    }
   ],
   "exams": [
     {
       "slug": "ibps",
       "cat": "banking",
-      "name": { "en": "IBPS", "hi": "IBPS" },
-      "covers": { "en": "PO, Clerk, RRB (Officer & Office Assistant), SO", "hi": "PO, क्लर्क, RRB (ऑफ़िसर और ऑफ़िस असिस्टेंट), SO" },
+      "name": {
+        "en": "IBPS",
+        "hi": "IBPS"
+      },
+      "covers": {
+        "en": "PO, Clerk, RRB (Officer & Office Assistant), SO",
+        "hi": "PO, क्लर्क, RRB (ऑफ़िसर और ऑफ़िस असिस्टेंट), SO"
+      },
       "official": "https://www.ibps.in",
       "docs": [
-        { "type": "photo", "w": 200, "h": 230, "minKB": 20, "maxKB": 50, "size": "4.5 × 3.5 cm" },
-        { "type": "signature", "w": 140, "h": 60, "minKB": 10, "maxKB": 20 },
-        { "type": "thumb", "w": 240, "h": 240, "minKB": 20, "maxKB": 50, "dpi": 200 },
-        { "type": "declaration", "w": 800, "h": 400, "minKB": 50, "maxKB": 100, "dpi": 200 }
+        {
+          "type": "photo",
+          "w": 200,
+          "h": 230,
+          "minKB": 20,
+          "maxKB": 50,
+          "size": "4.5 × 3.5 cm"
+        },
+        {
+          "type": "signature",
+          "w": 140,
+          "h": 60,
+          "minKB": 10,
+          "maxKB": 20
+        },
+        {
+          "type": "thumb",
+          "w": 240,
+          "h": 240,
+          "minKB": 20,
+          "maxKB": 50,
+          "dpi": 200,
+          "size": "3 × 3 cm"
+        },
+        {
+          "type": "declaration",
+          "w": 800,
+          "h": 400,
+          "minKB": 50,
+          "maxKB": 100,
+          "dpi": 200,
+          "size": "10 × 5 cm"
+        }
       ],
       "notes": [
-        { "en": "Some IBPS forms also take a live photo through your camera during registration. Keep your face well lit.", "hi": "कुछ IBPS फ़ॉर्म रजिस्ट्रेशन के समय कैमरे से लाइव फ़ोटो भी लेते हैं। चेहरे पर अच्छी रोशनी रखें।" },
-        { "en": "Sign in running hand with black ink on white paper. Signatures in capital letters are not accepted.", "hi": "सफ़ेद कागज़ पर काली स्याही से हस्ताक्षर करें। कैपिटल लेटर में किए गए हस्ताक्षर मान्य नहीं हैं।" },
-        { "en": "Write the declaration in English, in your own handwriting (not in capital letters), with black ink on white paper. Copy the exact text from your notification.", "hi": "घोषणा अंग्रेज़ी में, अपनी हैंडराइटिंग में (कैपिटल लेटर में नहीं), सफ़ेद कागज़ पर काली स्याही से लिखें। सही टेक्स्ट अपने नोटिफ़िकेशन से लें।" },
-        { "en": "Thumb impression: use black or blue ink on white paper.", "hi": "अँगूठे का निशान: सफ़ेद कागज़ पर काली या नीली स्याही से लगाएँ।" }
+        {
+          "en": "You also capture a live photo with your webcam or phone during the application, in addition to uploading the photo file.",
+          "hi": "आवेदन के दौरान फ़ोटो फ़ाइल अपलोड करने के साथ-साथ वेबकैम या फ़ोन से लाइव फ़ोटो भी लेनी होती है।"
+        },
+        {
+          "en": "Photo: recent colour passport-style photo on a light (preferably white) background. No caps, hats or dark glasses.",
+          "hi": "फ़ोटो: हाल की रंगीन पासपोर्ट जैसी फ़ोटो, हल्के (बेहतर हो सफ़ेद) बैकग्राउंड पर। टोपी, हैट या काला चश्मा नहीं।"
+        },
+        {
+          "en": "Signature: black ink on white paper, not in capital letters. It must match your signature at the exam, or you can be disqualified.",
+          "hi": "हस्ताक्षर: सफ़ेद कागज़ पर काली स्याही से, कैपिटल लेटर में नहीं। परीक्षा के समय के हस्ताक्षर से मेल न खाने पर अयोग्य किया जा सकता है।"
+        },
+        {
+          "en": "Thumb impression: left thumb, black or blue ink on white paper. If you have no left thumb, use the right thumb and write which finger you used.",
+          "hi": "अँगूठे का निशान: बायाँ अँगूठा, सफ़ेद कागज़ पर काली या नीली स्याही से। बायाँ अँगूठा न हो तो दायाँ अँगूठा लगाएँ और लिखें कि कौन-सी उँगली इस्तेमाल की।"
+        },
+        {
+          "en": "Declaration: write this in English in your own handwriting, with black ink and not in capital letters: “I, ______ (Name of the candidate), hereby declare that all the information submitted by me in the application form is correct, true and valid. I will present the supporting documents as and when required.”",
+          "hi": "घोषणा: इसे अंग्रेज़ी में, अपनी हैंडराइटिंग में, काली स्याही से और कैपिटल लेटर में नहीं, लिखें: “I, ______ (Name of the candidate), hereby declare that all the information submitted by me in the application form is correct, true and valid. I will present the supporting documents as and when required.”"
+        },
+        {
+          "en": "10th certificate: one A4 PDF, up to 500 KB. Use our image-to-PDF tool if you only have photos of it.",
+          "hi": "10वीं का प्रमाण पत्र: एक A4 PDF, अधिकतम 500 KB। अगर आपके पास सिर्फ़ उसकी फ़ोटो है, तो हमारे इमेज-से-PDF टूल का इस्तेमाल करें।"
+        }
       ],
       "sources": [
-        "https://www.practicemock.com/blog/ibps-rrb-photo-and-signature-size/",
-        "https://www.bankbazaar.com/banking-sector/ibps-po-handwritten-declaration.html",
-        "https://www.adda247.com/jobs/ibps-rrb-photo-and-signature-size/"
+        "https://www.ibps.in/wp-content/uploads/Detailed-Notification_CRP-PO-XVI_Final_V1_30.06.2026.pdf",
+        "https://www.practicemock.com/blog/ibps-rrb-photo-and-signature-size/"
+      ],
+      "verified": {
+        "date": "2026-11-20",
+        "title": "IBPS CRP PO/MT-XVI detailed notification, 30 June 2026",
+        "url": "https://www.ibps.in/wp-content/uploads/Detailed-Notification_CRP-PO-XVI_Final_V1_30.06.2026.pdf"
+      },
+      "pdfs": [
+        {
+          "en": "10th / SSLC certificate",
+          "hi": "10वीं / SSLC प्रमाण पत्र",
+          "minKB": 0,
+          "maxKB": 500,
+          "name": "10th-certificate"
+        }
       ]
     },
     {
       "slug": "sbi",
       "cat": "banking",
-      "name": { "en": "SBI", "hi": "SBI" },
-      "covers": { "en": "PO, Clerk (Junior Associate), CBO", "hi": "PO, क्लर्क (जूनियर एसोसिएट), CBO" },
-      "official": "https://sbi.co.in/web/careers",
+      "name": {
+        "en": "SBI",
+        "hi": "SBI"
+      },
+      "covers": {
+        "en": "PO, Clerk (Junior Associate), CBO",
+        "hi": "PO, क्लर्क (जूनियर एसोसिएट), CBO"
+      },
+      "official": "https://sbi.bank.in/web/careers/current-openings",
       "docs": [
-        { "type": "photo", "w": 200, "h": 230, "minKB": 20, "maxKB": 50, "size": "4.5 × 3.5 cm" },
-        { "type": "signature", "w": 140, "h": 60, "minKB": 10, "maxKB": 20 },
-        { "type": "thumb", "w": 240, "h": 240, "minKB": 20, "maxKB": 50, "dpi": 200 },
-        { "type": "declaration", "w": 800, "h": 400, "minKB": 50, "maxKB": 100, "dpi": 200 }
+        {
+          "type": "photo",
+          "w": 200,
+          "h": 230,
+          "minKB": 20,
+          "maxKB": 50,
+          "size": "4.5 × 3.5 cm"
+        },
+        {
+          "type": "signature",
+          "w": 140,
+          "h": 60,
+          "minKB": 10,
+          "maxKB": 20
+        },
+        {
+          "type": "thumb",
+          "w": 240,
+          "h": 240,
+          "minKB": 20,
+          "maxKB": 50,
+          "dpi": 200,
+          "size": "3 × 3 cm"
+        },
+        {
+          "type": "declaration",
+          "w": 800,
+          "h": 400,
+          "minKB": 50,
+          "maxKB": 100,
+          "dpi": 200,
+          "size": "10 × 5 cm"
+        }
       ],
       "notes": [
-        { "en": "Sign with black ink on white paper. Signatures in capital letters are not accepted.", "hi": "सफ़ेद कागज़ पर काली स्याही से हस्ताक्षर करें। कैपिटल लेटर में किए गए हस्ताक्षर मान्य नहीं हैं।" },
-        { "en": "Write the declaration in English with black ink, exactly as given in the SBI advertisement.", "hi": "घोषणा अंग्रेज़ी में काली स्याही से, ठीक वैसे ही लिखें जैसे SBI के विज्ञापन में दी गई है।" },
-        { "en": "If your left thumb is not available, the right thumb can be used.", "hi": "अगर बायाँ अँगूठा उपलब्ध नहीं है, तो दायाँ अँगूठा इस्तेमाल कर सकते हैं।" }
+        {
+          "en": "The PO and Junior Associate (Clerk) advertisements use the same photo, signature, thumb and declaration sizes.",
+          "hi": "PO और जूनियर एसोसिएट (क्लर्क) दोनों विज्ञापनों में फ़ोटो, हस्ताक्षर, अँगूठे और घोषणा के साइज़ एक जैसे हैं।"
+        },
+        {
+          "en": "Signature: black ink on white paper, not in capital letters.",
+          "hi": "हस्ताक्षर: सफ़ेद कागज़ पर काली स्याही से, कैपिटल लेटर में नहीं।"
+        },
+        {
+          "en": "Write the declaration in English with black ink, exactly as given in the SBI advertisement, not in capital letters.",
+          "hi": "घोषणा अंग्रेज़ी में काली स्याही से, ठीक वैसे ही लिखें जैसे SBI के विज्ञापन में दी गई है, कैपिटल लेटर में नहीं।"
+        },
+        {
+          "en": "If your left thumb is not available, the right thumb can be used.",
+          "hi": "अगर बायाँ अँगूठा उपलब्ध नहीं है, तो दायाँ अँगूठा इस्तेमाल कर सकते हैं।"
+        }
       ],
       "sources": [
-        "https://guidely.in/blog/sbi-po-photo-and-signature-size-a",
-        "https://www.adda247.com/jobs/sbi-clerk-photo-and-signature-resizer/",
-        "https://www.adda247.com/jobs/sbi-po-handwritten-declaration"
-      ]
+        "https://sbi.bank.in/web/careers/current-openings"
+      ],
+      "verified": {
+        "date": "2026-11-20",
+        "title": "SBI PO advertisement CRPD/PO/2026-27/09 and Junior Associates advertisement CRPD/CR/2026-27/17",
+        "url": "https://sbi.bank.in/web/careers/current-openings"
+      }
     },
     {
       "slug": "ssc",
       "cat": "ssc",
-      "name": { "en": "SSC", "hi": "SSC" },
-      "covers": { "en": "CGL, CHSL, MTS, JE, Selection Post", "hi": "CGL, CHSL, MTS, JE, सिलेक्शन पोस्ट" },
+      "name": {
+        "en": "SSC",
+        "hi": "SSC"
+      },
+      "covers": {
+        "en": "CGL, CHSL, MTS, JE, Selection Post",
+        "hi": "CGL, CHSL, MTS, JE, सिलेक्शन पोस्ट"
+      },
       "official": "https://ssc.gov.in",
       "docs": [
-        { "type": "signature", "w": 354, "h": 118, "minKB": 10, "maxKB": 20, "dpi": 150, "size": "6.0 × 2.0 cm" }
+        {
+          "type": "signature",
+          "w": 354,
+          "h": 118,
+          "minKB": 10,
+          "maxKB": 20,
+          "dpi": 150,
+          "size": "6.0 × 2.0 cm"
+        }
       ],
       "notes": [
-        { "en": "SSC now takes your photo live with the camera on its website or app. You do not upload a photo file. Use good light and a plain light background, with no cap or dark glasses. A photo of a printed photo gets rejected.", "hi": "SSC अब वेबसाइट या ऐप पर कैमरे से लाइव फ़ोटो लेता है। फ़ोटो फ़ाइल अपलोड नहीं करनी होती। अच्छी रोशनी और सादा हल्का बैकग्राउंड रखें, टोपी या काला चश्मा न पहनें। छपी हुई फ़ोटो की फ़ोटो खींचने पर फ़ॉर्म रिजेक्ट हो जाता है।" },
-        { "en": "Sources disagree on the signature dimensions (4.0 × 2.0 cm or 6.0 × 2.0 cm). The portal mainly checks the file size (10–20 KB). Confirm in your exam's notice.", "hi": "हस्ताक्षर की लंबाई-चौड़ाई पर स्रोतों में मतभेद है (4.0 × 2.0 सेमी या 6.0 × 2.0 सेमी)। पोर्टल मुख्य रूप से फ़ाइल साइज़ (10–20 KB) जाँचता है। अपनी परीक्षा का नोटिस ज़रूर देखें।" }
+        {
+          "en": "SSC now takes your photo live with the camera on its website or app. You do not upload a photo file. Use good light and a plain light background, with no cap or dark glasses. A photo of a printed photo gets rejected.",
+          "hi": "SSC अब वेबसाइट या ऐप पर कैमरे से लाइव फ़ोटो लेता है। फ़ोटो फ़ाइल अपलोड नहीं करनी होती। अच्छी रोशनी और सादा हल्का बैकग्राउंड रखें, टोपी या काला चश्मा न पहनें। छपी हुई फ़ोटो की फ़ोटो खींचने पर फ़ॉर्म रिजेक्ट हो जाता है।"
+        },
+        {
+          "en": "Sources disagree on the signature dimensions (4.0 × 2.0 cm or 6.0 × 2.0 cm). The portal mainly checks the file size (10–20 KB). Confirm in your exam's notice.",
+          "hi": "हस्ताक्षर की लंबाई-चौड़ाई पर स्रोतों में मतभेद है (4.0 × 2.0 सेमी या 6.0 × 2.0 सेमी)। पोर्टल मुख्य रूप से फ़ाइल साइज़ (10–20 KB) जाँचता है। अपनी परीक्षा का नोटिस ज़रूर देखें।"
+        }
       ],
       "sources": [
         "https://www.pw.live/ssc/exams/ssc-chsl-photo-and-signature-size",
@@ -88,15 +279,34 @@
     {
       "slug": "rrb",
       "cat": "railway",
-      "name": { "en": "Railway RRB", "hi": "रेलवे RRB" },
-      "covers": { "en": "NTPC, Group D, ALP, Technician", "hi": "NTPC, ग्रुप D, ALP, टेक्नीशियन" },
+      "name": {
+        "en": "Railway RRB",
+        "hi": "रेलवे RRB"
+      },
+      "covers": {
+        "en": "NTPC, Group D, ALP, Technician",
+        "hi": "NTPC, ग्रुप D, ALP, टेक्नीशियन"
+      },
       "official": "https://www.rrbapply.gov.in",
       "docs": [
-        { "type": "signature", "w": 560, "h": 240, "minKB": 30, "maxKB": 49, "dpi": 200 }
+        {
+          "type": "signature",
+          "w": 560,
+          "h": 240,
+          "minKB": 30,
+          "maxKB": 49,
+          "dpi": 200
+        }
       ],
       "notes": [
-        { "en": "In the 2026 recruitment cycle (for example CEN 06/2026 and CEN 07/2026) RRB takes your photo live through the camera. Older notices asked for a 20–50 KB photo upload. Follow your own notice.", "hi": "2026 की भर्ती (जैसे CEN 06/2026 और CEN 07/2026) में RRB कैमरे से लाइव फ़ोटो लेता है। पुराने नोटिस में 20–50 KB फ़ोटो अपलोड माँगी जाती थी। अपने नोटिस के अनुसार चलें।" },
-        { "en": "The signature must be 30–49 KB and at least 140 × 60 pixels.", "hi": "हस्ताक्षर 30–49 KB का और कम से कम 140 × 60 पिक्सेल का होना चाहिए।" }
+        {
+          "en": "In the 2026 recruitment cycle (for example CEN 06/2026 and CEN 07/2026) RRB takes your photo live through the camera. Older notices asked for a 20–50 KB photo upload. Follow your own notice.",
+          "hi": "2026 की भर्ती (जैसे CEN 06/2026 और CEN 07/2026) में RRB कैमरे से लाइव फ़ोटो लेता है। पुराने नोटिस में 20–50 KB फ़ोटो अपलोड माँगी जाती थी। अपने नोटिस के अनुसार चलें।"
+        },
+        {
+          "en": "The signature must be 30–49 KB and at least 140 × 60 pixels.",
+          "hi": "हस्ताक्षर 30–49 KB का और कम से कम 140 × 60 पिक्सेल का होना चाहिए।"
+        }
       ],
       "sources": [
         "https://www.oliveboard.in/blog/rrb-ntpc-photo-and-signature-details/",
@@ -107,17 +317,46 @@
     {
       "slug": "upsc",
       "cat": "upsc",
-      "name": { "en": "UPSC", "hi": "UPSC" },
-      "covers": { "en": "Civil Services, NDA, CDS, CAPF, ESE and other UPSC exams", "hi": "सिविल सेवा, NDA, CDS, CAPF, ESE और अन्य UPSC परीक्षाएँ" },
+      "name": {
+        "en": "UPSC",
+        "hi": "UPSC"
+      },
+      "covers": {
+        "en": "Civil Services, NDA, CDS, CAPF, ESE and other UPSC exams",
+        "hi": "सिविल सेवा, NDA, CDS, CAPF, ESE और अन्य UPSC परीक्षाएँ"
+      },
       "official": "https://upsc.gov.in",
       "docs": [
-        { "type": "photo", "w": 500, "h": 500, "minKB": 20, "maxKB": 200, "file": "photo" },
-        { "type": "signature", "w": 500, "h": 500, "minKB": 20, "maxKB": 100, "file": "signature" }
+        {
+          "type": "photo",
+          "w": 500,
+          "h": 500,
+          "minKB": 20,
+          "maxKB": 200,
+          "file": "photo"
+        },
+        {
+          "type": "signature",
+          "w": 500,
+          "h": 500,
+          "minKB": 20,
+          "maxKB": 100,
+          "file": "signature"
+        }
       ],
       "notes": [
-        { "en": "UPSC also takes a live photo during the application and matches it with your uploaded photo. Your face should cover about three-fourths of the photo.", "hi": "UPSC आवेदन के दौरान लाइव फ़ोटो भी लेता है और उसे आपकी अपलोड की गई फ़ोटो से मिलाता है। फ़ोटो में चेहरा लगभग तीन-चौथाई हिस्सा घेरना चाहिए।" },
-        { "en": "Sources say UPSC wants three signatures in one image, one below the other. Sign three times on white paper with black ink and take one photo of all three.", "hi": "स्रोतों के अनुसार UPSC एक ही इमेज में तीन हस्ताक्षर माँगता है, एक के नीचे एक। सफ़ेद कागज़ पर काली स्याही से तीन बार हस्ताक्षर करें और तीनों की एक फ़ोटो लें।" },
-        { "en": "Some sources give a 300 KB photo limit. We keep your photo under 200 KB so it passes either way.", "hi": "कुछ स्रोत फ़ोटो की सीमा 300 KB बताते हैं। हम फ़ोटो 200 KB से कम रखते हैं ताकि दोनों हालात में सही रहे।" }
+        {
+          "en": "UPSC also takes a live photo during the application and matches it with your uploaded photo. Your face should cover about three-fourths of the photo.",
+          "hi": "UPSC आवेदन के दौरान लाइव फ़ोटो भी लेता है और उसे आपकी अपलोड की गई फ़ोटो से मिलाता है। फ़ोटो में चेहरा लगभग तीन-चौथाई हिस्सा घेरना चाहिए।"
+        },
+        {
+          "en": "Sources say UPSC wants three signatures in one image, one below the other. Sign three times on white paper with black ink and take one photo of all three.",
+          "hi": "स्रोतों के अनुसार UPSC एक ही इमेज में तीन हस्ताक्षर माँगता है, एक के नीचे एक। सफ़ेद कागज़ पर काली स्याही से तीन बार हस्ताक्षर करें और तीनों की एक फ़ोटो लें।"
+        },
+        {
+          "en": "Some sources give a 300 KB photo limit. We keep your photo under 200 KB so it passes either way.",
+          "hi": "कुछ स्रोत फ़ोटो की सीमा 300 KB बताते हैं। हम फ़ोटो 200 KB से कम रखते हैं ताकि दोनों हालात में सही रहे।"
+        }
       ],
       "sources": [
         "https://www.visionias.in/blog/upsc-news/upsc-new-photo-signature-rules-2026-dos-and-donts",
@@ -128,84 +367,254 @@
     {
       "slug": "neet-ug",
       "cat": "entrance",
-      "name": { "en": "NEET UG", "hi": "NEET UG" },
-      "covers": { "en": "National Eligibility cum Entrance Test (UG), conducted by NTA", "hi": "राष्ट्रीय पात्रता सह प्रवेश परीक्षा (UG), NTA द्वारा" },
+      "name": {
+        "en": "NEET UG",
+        "hi": "NEET UG"
+      },
+      "covers": {
+        "en": "National Eligibility cum Entrance Test (UG), conducted by NTA",
+        "hi": "राष्ट्रीय पात्रता सह प्रवेश परीक्षा (UG), NTA द्वारा"
+      },
       "official": "https://neet.nta.nic.in",
       "docs": [
-        { "type": "photo", "w": 350, "h": 450, "minKB": 10, "maxKB": 200, "size": "3.5 × 4.5 cm" },
-        { "type": "postcard", "w": 600, "h": 900, "minKB": 10, "maxKB": 200, "size": "4 × 6 inch" },
-        { "type": "signature", "w": 350, "h": 150, "minKB": 10, "maxKB": 30 },
-        { "type": "fingers", "w": 900, "h": 600, "minKB": 10, "maxKB": 200 }
+        {
+          "type": "photo",
+          "w": 350,
+          "h": 450,
+          "minKB": 10,
+          "maxKB": 200
+        },
+        {
+          "type": "signature",
+          "w": 350,
+          "h": 150,
+          "minKB": 10,
+          "maxKB": 100
+        },
+        {
+          "type": "fingers",
+          "w": 900,
+          "h": 600,
+          "minKB": 50,
+          "maxKB": 200
+        }
       ],
       "notes": [
-        { "en": "Photo: white background, about 80% of the face visible including both ears, and taken recently. NTA may also take a live photo.", "hi": "फ़ोटो: सफ़ेद बैकग्राउंड, चेहरा लगभग 80% दिखे और दोनों कान दिखें, फ़ोटो हाल की हो। NTA लाइव फ़ोटो भी ले सकता है।" },
-        { "en": "Sources disagree on the signature limit (4–30 KB or 10–50 KB). We aim for 10–30 KB, which satisfies both.", "hi": "हस्ताक्षर की सीमा पर स्रोतों में मतभेद है (4–30 KB या 10–50 KB)। हम 10–30 KB रखते हैं, जो दोनों में सही है।" },
-        { "en": "Check the information bulletin to see whether the finger and thumb impressions of both hands go in one image or separate images.", "hi": "इन्फ़ॉर्मेशन बुलेटिन में देखें कि दोनों हाथों की उँगलियों और अँगूठे के निशान एक इमेज में देने हैं या अलग-अलग।" }
+        {
+          "en": "Photo: recent passport-size photo, colour or black & white, with about 80% of the image being your face including ears, no mask, on a white background.",
+          "hi": "फ़ोटो: हाल की पासपोर्ट साइज़ फ़ोटो, रंगीन या ब्लैक एंड व्हाइट, इमेज का लगभग 80% हिस्सा आपका चेहरा हो और कान दिखें, मास्क न हो, बैकग्राउंड सफ़ेद हो।"
+        },
+        {
+          "en": "Put the fingers and thumb impressions of both hands on white paper. The bulletin gives two limits for this file (10–200 KB and 50–300 KB), so we make it 50–200 KB, which fits both.",
+          "hi": "दोनों हाथों की उँगलियों और अँगूठे के निशान सफ़ेद कागज़ पर लगाएँ। बुलेटिन में इस फ़ाइल की दो सीमाएँ दी गई हैं (10–200 KB और 50–300 KB), इसलिए हम इसे 50–200 KB बनाते हैं, जो दोनों में सही है।"
+        },
+        {
+          "en": "Certificates, marksheet and address proof must be PDFs between 50 KB and 300 KB each.",
+          "hi": "प्रमाण पत्र, मार्कशीट और पते का प्रमाण 50 KB से 300 KB के बीच की PDF होने चाहिए।"
+        },
+        {
+          "en": "These are the 2026 rules. The 2027 bulletin is expected early in 2027, and we will update this page when it is out.",
+          "hi": "ये 2026 के नियम हैं। 2027 का बुलेटिन 2027 की शुरुआत में आने की उम्मीद है, आने पर हम यह पेज अपडेट करेंगे।"
+        }
       ],
       "sources": [
-        "https://medicine.careers360.com/articles/neet-photo-size-format-documents",
-        "https://medicine.careers360.com/articles/postcard-size-photo-for-neet-2026",
-        "https://www.pw.live/neet/exams/neet-2026-photo-and-signature-guideline"
+        "https://cdnbbsr.s3waas.gov.in/s37bc1ec1d9c3426357e69acd5bf320061/uploads/2026/02/202602231394640855.pdf"
+      ],
+      "verified": {
+        "date": "2026-11-20",
+        "title": "NEET (UG) 2026 Information Bulletin",
+        "url": "https://cdnbbsr.s3waas.gov.in/s37bc1ec1d9c3426357e69acd5bf320061/uploads/2026/02/202602231394640855.pdf"
+      },
+      "pdfs": [
+        {
+          "en": "Class 10 certificate",
+          "hi": "कक्षा 10 का प्रमाण पत्र",
+          "minKB": 50,
+          "maxKB": 300,
+          "name": "class-10-certificate"
+        },
+        {
+          "en": "Class 10 marksheet",
+          "hi": "कक्षा 10 की मार्कशीट",
+          "minKB": 50,
+          "maxKB": 300,
+          "name": "class-10-marksheet"
+        },
+        {
+          "en": "Address proof (present and permanent)",
+          "hi": "पते का प्रमाण (वर्तमान और स्थायी)",
+          "minKB": 50,
+          "maxKB": 300,
+          "name": "address-proof"
+        },
+        {
+          "en": "Category certificate (if applicable)",
+          "hi": "श्रेणी प्रमाण पत्र (यदि लागू हो)",
+          "minKB": 50,
+          "maxKB": 300,
+          "name": "category-certificate"
+        }
       ]
     },
     {
       "slug": "jee-main",
       "cat": "entrance",
-      "name": { "en": "JEE Main", "hi": "JEE Main" },
-      "covers": { "en": "Joint Entrance Examination (Main), conducted by NTA", "hi": "संयुक्त प्रवेश परीक्षा (मेन), NTA द्वारा" },
+      "name": {
+        "en": "JEE Main",
+        "hi": "JEE Main"
+      },
+      "covers": {
+        "en": "Joint Entrance Examination (Main) 2027, conducted by NTA",
+        "hi": "संयुक्त प्रवेश परीक्षा (मेन) 2027, NTA द्वारा"
+      },
       "official": "https://jeemain.nta.nic.in",
       "docs": [
-        { "type": "photo", "w": 350, "h": 450, "minKB": 10, "maxKB": 200, "size": "3.5 × 4.5 cm" },
-        { "type": "signature", "w": 350, "h": 150, "minKB": 10, "maxKB": 50, "size": "3.5 × 1.5 cm" }
+        {
+          "type": "photo",
+          "w": 350,
+          "h": 450,
+          "minKB": 10,
+          "maxKB": 200
+        },
+        {
+          "type": "signature",
+          "w": 350,
+          "h": 150,
+          "minKB": 10,
+          "maxKB": 100
+        }
       ],
       "notes": [
-        { "en": "Recent guides say the photo limit is now 200 KB (older guides say 300 KB) and the signature limit is 100 KB (older: 50 KB). We keep the signature under 50 KB so it passes both.", "hi": "हाल की गाइड के अनुसार फ़ोटो की सीमा अब 200 KB है (पुरानी गाइड में 300 KB) और हस्ताक्षर की 100 KB (पहले 50 KB)। हम हस्ताक्षर 50 KB से कम रखते हैं ताकि दोनों में सही रहे।" },
-        { "en": "Photo: colour, recent, white background, about 80% of the face visible including ears.", "hi": "फ़ोटो: रंगीन, हाल की, सफ़ेद बैकग्राउंड, चेहरा लगभग 80% दिखे और कान भी दिखें।" }
+        {
+          "en": "You also take a live photo during the application. The uploaded photo must be recent, in colour, with about 80% of the face visible including ears, no mask, on a white background.",
+          "hi": "आवेदन के दौरान लाइव फ़ोटो भी ली जाती है। अपलोड की जाने वाली फ़ोटो हाल की, रंगीन हो, चेहरा लगभग 80% दिखे और कान भी दिखें, मास्क न हो और बैकग्राउंड सफ़ेद हो।"
+        },
+        {
+          "en": "The Class 10 certificate or marksheet must be a PDF between 50 KB and 300 KB.",
+          "hi": "कक्षा 10 का प्रमाण पत्र या मार्कशीट 50 KB से 300 KB के बीच की PDF होनी चाहिए।"
+        },
+        {
+          "en": "The bulletin does not fix pixel sizes. We use 350 × 450 px for the photo and 350 × 150 px for the signature, which are standard passport and signature shapes.",
+          "hi": "बुलेटिन में पिक्सेल साइज़ तय नहीं है। हम फ़ोटो के लिए 350 × 450 px और हस्ताक्षर के लिए 350 × 150 px रखते हैं, जो सामान्य पासपोर्ट और हस्ताक्षर के आकार हैं।"
+        }
       ],
       "sources": [
-        "https://engineering.careers360.com/articles/jee-main-photo-and-signature-guidelines",
-        "https://motion.ac.in/blog/jee-main-photo-size-and-signature-guidelines/",
-        "https://collegedunia.com/exams/jee-main/photo-size-and-signature-guidelines"
+        "https://cdnbbsr.s3waas.gov.in/s3f8e59f4b2fe7c5705bf878bbd494ccdf/uploads/2026/10/202610241890224107.pdf"
+      ],
+      "verified": {
+        "date": "2026-11-20",
+        "title": "JEE (Main) 2027 Information Bulletin, 24 October 2026",
+        "url": "https://cdnbbsr.s3waas.gov.in/s3f8e59f4b2fe7c5705bf878bbd494ccdf/uploads/2026/10/202610241890224107.pdf"
+      },
+      "pdfs": [
+        {
+          "en": "Class 10 certificate or marksheet",
+          "hi": "कक्षा 10 का प्रमाण पत्र या मार्कशीट",
+          "minKB": 50,
+          "maxKB": 300,
+          "name": "class-10-certificate"
+        }
       ]
     },
     {
       "slug": "cuet-ug",
       "cat": "entrance",
-      "name": { "en": "CUET UG", "hi": "CUET UG" },
-      "covers": { "en": "Common University Entrance Test (UG), conducted by NTA", "hi": "कॉमन यूनिवर्सिटी एंट्रेंस टेस्ट (UG), NTA द्वारा" },
+      "name": {
+        "en": "CUET UG",
+        "hi": "CUET UG"
+      },
+      "covers": {
+        "en": "Common University Entrance Test (UG), conducted by NTA",
+        "hi": "कॉमन यूनिवर्सिटी एंट्रेंस टेस्ट (UG), NTA द्वारा"
+      },
       "official": "https://cuet.nta.nic.in",
       "docs": [
-        { "type": "photo", "w": 350, "h": 450, "minKB": 10, "maxKB": 200 },
-        { "type": "signature", "w": 350, "h": 150, "minKB": 10, "maxKB": 30 }
+        {
+          "type": "photo",
+          "w": 350,
+          "h": 450,
+          "minKB": 10,
+          "maxKB": 200
+        },
+        {
+          "type": "signature",
+          "w": 350,
+          "h": 150,
+          "minKB": 10,
+          "maxKB": 50
+        }
       ],
       "notes": [
-        { "en": "Sources disagree on the signature limit (4–30 KB or 10–50 KB). We aim for 10–30 KB, which satisfies both.", "hi": "हस्ताक्षर की सीमा पर स्रोतों में मतभेद है (4–30 KB या 10–50 KB)। हम 10–30 KB रखते हैं, जो दोनों में सही है।" },
-        { "en": "Use the same photo in all your documents. NTA flags photo mismatches.", "hi": "सभी दस्तावेज़ों में एक ही फ़ोटो लगाएँ। NTA फ़ोटो मेल न खाने पर आपत्ति करता है।" }
+        {
+          "en": "You also take a live photo during the application. The uploaded photo must be recent, in colour, with about 80% of the face visible including ears, no mask, on a white background.",
+          "hi": "आवेदन के दौरान लाइव फ़ोटो भी ली जाती है। अपलोड की जाने वाली फ़ोटो हाल की, रंगीन हो, चेहरा लगभग 80% दिखे और कान भी दिखें, मास्क न हो और बैकग्राउंड सफ़ेद हो।"
+        },
+        {
+          "en": "Use the same photo in all your documents. NTA flags photo mismatches.",
+          "hi": "सभी दस्तावेज़ों में एक ही फ़ोटो लगाएँ। NTA फ़ोटो मेल न खाने पर आपत्ति करता है।"
+        },
+        {
+          "en": "These are the 2026 rules. The 2027 bulletin is expected early in 2027.",
+          "hi": "ये 2026 के नियम हैं। 2027 का बुलेटिन 2027 की शुरुआत में आने की उम्मीद है।"
+        }
       ],
       "sources": [
-        "https://university.careers360.com/articles/cuet-photo-size-2026",
-        "https://www.pw.live/cuet/exams/documents-required-for-cuet-application-form"
-      ]
+        "https://cdnbbsr.s3waas.gov.in/s3d1a21da7bca4abff8b0b61b87597de73/uploads/2026/01/202601031633478370.pdf"
+      ],
+      "verified": {
+        "date": "2026-11-20",
+        "title": "CUET (UG) 2026 Information Bulletin",
+        "url": "https://cdnbbsr.s3waas.gov.in/s3d1a21da7bca4abff8b0b61b87597de73/uploads/2026/01/202601031633478370.pdf"
+      }
     },
     {
       "slug": "ctet",
       "cat": "teaching",
-      "name": { "en": "CTET", "hi": "CTET" },
-      "covers": { "en": "Central Teacher Eligibility Test, conducted by CBSE", "hi": "केंद्रीय शिक्षक पात्रता परीक्षा, CBSE द्वारा" },
+      "name": {
+        "en": "CTET",
+        "hi": "CTET"
+      },
+      "covers": {
+        "en": "Central Teacher Eligibility Test, conducted by CBSE",
+        "hi": "केंद्रीय शिक्षक पात्रता परीक्षा, CBSE द्वारा"
+      },
       "official": "https://ctet.nic.in",
       "docs": [
-        { "type": "photo", "w": 350, "h": 450, "minKB": 10, "maxKB": 100, "size": "3.5 × 4.5 cm" },
-        { "type": "signature", "w": 350, "h": 150, "minKB": 10, "maxKB": 30, "size": "3.5 × 1.5 cm" }
+        {
+          "type": "photo",
+          "w": 350,
+          "h": 450,
+          "minKB": 10,
+          "maxKB": 100,
+          "size": "3.5 × 4.5 cm"
+        },
+        {
+          "type": "signature",
+          "w": 350,
+          "h": 150,
+          "minKB": 3,
+          "maxKB": 30,
+          "size": "3.5 × 1.5 cm"
+        }
       ],
       "notes": [
-        { "en": "Sources disagree on the signature limit (3–30 KB or 10–100 KB). We aim for 10–30 KB, which satisfies both.", "hi": "हस्ताक्षर की सीमा पर स्रोतों में मतभेद है (3–30 KB या 10–100 KB)। हम 10–30 KB रखते हैं, जो दोनों में सही है।" },
-        { "en": "Wrong photo or signature dimensions can lead to rejection, so keep the 3.5 × 4.5 cm and 3.5 × 1.5 cm shapes.", "hi": "फ़ोटो या हस्ताक्षर का आकार गलत होने पर फ़ॉर्म रिजेक्ट हो सकता है, इसलिए 3.5 × 4.5 सेमी और 3.5 × 1.5 सेमी का आकार रखें।" }
+        {
+          "en": "Photo 3.5 cm wide × 4.5 cm high, 10–100 KB. Signature 3.5 cm × 1.5 cm, 3–30 KB. Both JPG.",
+          "hi": "फ़ोटो 3.5 सेमी चौड़ी × 4.5 सेमी ऊँची, 10–100 KB। हस्ताक्षर 3.5 सेमी × 1.5 सेमी, 3–30 KB। दोनों JPG में।"
+        },
+        {
+          "en": "Keep both files ready in the right size before you start the application.",
+          "hi": "आवेदन शुरू करने से पहले दोनों फ़ाइलें सही साइज़ में तैयार रखें।"
+        }
       ],
       "sources": [
-        "https://www.examdetail.in/tools/exam-photo-resizer/ctet",
-        "https://docset.in/blog/ctet-photo-signature-size-2026/",
-        "https://www.cbseguidanceweb.com/ctet-required-documents-photo-signature-size/"
-      ]
+        "https://cdnbbsr.s3waas.gov.in/s3443dec3062d0286986e21dc0631734c9/uploads/2026/05/202605111250310617.pdf"
+      ],
+      "verified": {
+        "date": "2026-11-20",
+        "title": "CTET September 2026 Information Bulletin",
+        "url": "https://cdnbbsr.s3waas.gov.in/s3443dec3062d0286986e21dc0631734c9/uploads/2026/05/202605111250310617.pdf"
+      }
     }
   ]
 }

@@ -33,8 +33,12 @@ approves changes, verifies exam rules and handles accounts (domain, AdSense, Pla
 - [ ] Choose hosting: public repo + GitHub Pages, or Cloudflare Pages (owner)
 - [ ] Buy a domain, e.g. a `.in` (owner). AdSense effectively needs your own domain.
 - [ ] Google Search Console: verify the site and submit `sitemap.xml` (owner, ~10 min)
-- [ ] Verify every preset against the official notification PDF. Claude drafts, owner confirms.
-      Mark verified presets on the page.
+- [x] Verify presets against official notifications (20 Nov 2026): IBPS, SBI, JEE Main 2027,
+      NEET UG 2026, CUET UG 2026, CTET Sept 2026 are verified and badged on the site.
+      This corrected NEET (signature 10–100 KB, no postcard photo, impressions 50–200 KB),
+      JEE Main (signature 10–100 KB), CUET (signature 10–50 KB) and CTET (signature 3–30 KB).
+- [ ] UPSC, SSC and RRB block automated access to their notices. Verify them by hand, or when
+      the owner shares the notice PDF (UPSC CSE/NDA/CDS 2027 notices are due Dec 2026 to Feb 2027).
 - [ ] Add a contact email to `data/site.json` (needed for AdSense and Play Store)
 
 ## Phase 3: grow traffic (weeks 2–6)
@@ -42,9 +46,10 @@ approves changes, verifies exam rules and handles accounts (domain, AdSense, Pla
 Generic searches like "photo resize 20kb" and "signature 10 to 20 kb" have far more volume
 than exam names, so the next pages target them.
 
-- [ ] "Compress photo to 20 KB / 50 KB / 100 KB" and "signature 10–20 KB" landing pages
-- [ ] PDF tools (marksheets and certificates must often be PDFs under a KB limit):
-      JPG → PDF, compress PDF, merge PDF. All in the browser.
+- [x] "Compress photo to 10/20/30/50/100/200/500 KB", "20–50 KB" and "signature 10–20 KB" pages
+- [x] Image → PDF under a KB limit (A4, multi-page), linked from each exam's PDF rows
+      (NEET/JEE certificates 50–300 KB, IBPS 10th certificate up to 500 KB)
+- [ ] Compress an existing PDF and merge PDFs (needs a bundled PDF renderer such as pdf.js)
 - [ ] More exams, Hindi-belt first:
   - state PSCs (UPPSC, BPSC, MPPSC, RPSC)
   - UP/Bihar police

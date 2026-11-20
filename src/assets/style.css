@@ -170,3 +170,23 @@ tr:last-child td { border-bottom: 0; }
 
 footer { max-width: 760px; margin: 24px auto 0; padding: 16px 16px 40px; color: var(--muted); font-size: .85rem; border-top: 1px solid var(--border); }
 footer nav { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+
+/* verification badges */
+.verified, .unverified { font-size: .9rem; padding: 8px 12px; border-radius: 10px; margin: 8px 0; }
+.verified { color: var(--ok); background: color-mix(in srgb, var(--ok) 10%, transparent); }
+.unverified { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.verified a, .unverified a { color: inherit; }
+.tick { display: block; margin-top: 6px; font-style: normal; font-size: .78rem; font-weight: 600; color: var(--ok); }
+.other a.current { background: var(--primary); border-color: var(--primary); color: var(--primary-fg); }
+.adjust-grid .wide { grid-column: 1 / -1; }
+.radios { flex-wrap: wrap; margin: 4px 0 8px; }
+
+/* pdf page list */
+.pages { list-style: none; padding: 0; margin: 10px 0; display: grid; gap: 8px; }
+.page { display: flex; align-items: center; gap: 12px; padding: 8px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); }
+.page canvas { flex: 0 0 auto; border-radius: 6px; box-shadow: 0 0 0 1px var(--border); background: #fff; max-height: 96px; }
+.page-meta { display: grid; gap: 6px; }
+.page-btns { display: flex; gap: 6px; }
+.page-btns .btn { min-width: 42px; }
+.chips { flex-wrap: wrap; overflow: visible; }
+.table-wrap a { white-space: nowrap; }

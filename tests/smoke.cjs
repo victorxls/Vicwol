@@ -5,6 +5,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const http = require('http');
+const { execFileSync } = require('child_process');
 const { chromium } = require('playwright');
 
 const DIST = path.join(__dirname, '..', 'dist');
@@ -159,6 +160,63 @@ async function runDoc(page, files, slug, d, i, multi) {
     await page.goto(`${base}exam/${ex.slug}/`);
     console.log(ex.slug);
     for (let i = 0; i < ex.docs.length; i++) await runDoc(page, files, ex.slug, ex.docs[i], i, ex.docs.length > 1);
+  }
+
+  // Compress-to-KB pages keep the image's shape and land under the limit.
+  for (const [slug, min, max, input] of [['10kb', 0, 10, 'photo'], ['20kb', 0, 20, 'photo'], ['500kb', 0, 500, 'photo'], ['20-50kb', 20, 50, 'photo'], ['signature-10-20kb', 10, 20, 'signature']]) {
+    await page.goto(`${base}compress/${slug}/`);
+    await page.setInputFiles('.f-gallery', files[input]);
+    await page.waitForSelector('.s-edit:not([hidden])');
+    await page.click('.make');
+    await page.waitForSelector('.s-result:not([hidden])', { timeout: 60000 });
+    const r = await page.evaluate(async () => {
+      const blob = await (await fetch(document.querySelector('.s-result .out').src)).blob();
+      const bmp = await createImageBitmap(blob);
+      return { bytes: blob.size, w: bmp.width, h: bmp.height, name: document.querySelector('.download').getAttribute('download') };
+    });
+    const inAspect = input === 'photo' ? 3000 / 4000 : 2400 / 1100;
+    const tag = `compress/${slug}`;
+    if (r.bytes > max * 1000 || r.bytes < min * 1024) fail(`${tag}: ${r.bytes} bytes outside ${min}–${max} KB`);
+    if (Math.abs(r.w / r.h - inAspect) > 0.02) fail(`${tag}: aspect ${r.w}×${r.h} does not match input`);
+    console.log(`  ok ${tag}: ${r.w}×${r.h}, ${(r.bytes / 1024).toFixed(1)} KB -> ${r.name}`);
+  }
+
+  // Image to PDF: size range, page count, A4 pages, valid file (checked with pypdf when available).
+  const pdfCases = [
+    { q: '?min=50&max=300&name=class-10', inputs: ['declaration', 'thumb'], min: 50, max: 300 },
+    { q: '', chip: 1, inputs: ['declaration', 'photo', 'signature'], min: 0, max: 500 },
+    { q: '?min=0&max=100', inputs: ['declaration', 'photo', 'signature', 'thumb', 'declaration'], min: 0, max: 100 },
+  ];
+  for (const pc of pdfCases) {
+    await page.goto(`${base}pdf/${pc.q}`);
+    if (pc.chip != null) await page.click(`.chips .tab[data-p="${pc.chip}"]`);
+    await page.setInputFiles('.f-gallery', pc.inputs.map((k) => files[k]));
+    await page.waitForFunction((n) => document.querySelectorAll('.pages .page').length === n, pc.inputs.length);
+    await page.click('.make');
+    await page.waitForSelector('#pdftool .s-result:not([hidden])', { timeout: 120000 });
+    const r = await page.evaluate(async () => {
+      const a = document.querySelector('#pdftool .download');
+      const buf = new Uint8Array(await (await (await fetch(a.href)).blob()).arrayBuffer());
+      let bin = '';
+      for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000));
+      return { bytes: buf.length, b64: btoa(bin), name: a.getAttribute('download'), pages: document.querySelector('#pdftool .s-result').dataset.pages };
+    });
+    const tag = `pdf ${pc.min}-${pc.max}KB x${pc.inputs.length}`;
+    const file = path.join(OUT, `out-${r.name}`);
+    fs.writeFileSync(file, Buffer.from(r.b64, 'base64'));
+    if (r.bytes > pc.max * 1000 || r.bytes < pc.min * 1024) fail(`${tag}: ${r.bytes} bytes outside range`);
+    if (Number(r.pages) !== pc.inputs.length) fail(`${tag}: ${r.pages} pages`);
+    let check = 'not checked';
+    try {
+      check = execFileSync('python3', ['-I', '-c', [
+        'import sys, pypdf',
+        'r = pypdf.PdfReader(sys.argv[1], strict=True)',
+        'sizes = {(round(float(p.mediabox.width)), round(float(p.mediabox.height))) for p in r.pages}',
+        'print(len(r.pages), sorted(sizes))',
+      ].join('\n'), file], { encoding: 'utf8' }).trim();
+      if (!check.startsWith(`${pc.inputs.length} `)) fail(`${tag}: pypdf says ${check}`);
+    } catch (e) { fail(`${tag}: pypdf could not read the PDF: ${e.message.split('\n').slice(-2).join(' ')}`); }
+    console.log(`  ok ${tag}: ${(r.bytes / 1024).toFixed(1)} KB, pypdf: ${check} -> ${r.name}`);
   }
   await ctx.close();
 
