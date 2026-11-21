@@ -190,3 +190,8 @@ footer nav { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
 .page-btns .btn { min-width: 42px; }
 .chips { flex-wrap: wrap; overflow: visible; }
 .table-wrap a { white-space: nowrap; }
+.pw-box { border: 1px solid var(--accent); border-radius: 12px; padding: 10px 12px; margin: 10px 0; background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.pw-row input { flex: 1; min-width: 0; }
+.jpgs { list-style: none; padding: 0; margin: 10px 0; display: grid; gap: 8px; }
+.jpg img { max-height: 120px; max-width: 120px; border-radius: 6px; box-shadow: 0 0 0 1px var(--border); background: #fff; }
+.jpg .page-meta a { justify-self: start; }

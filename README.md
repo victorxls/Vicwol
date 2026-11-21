@@ -21,7 +21,8 @@ See [docs/PLAN.md](docs/PLAN.md) for the roadmap and money plan.
 | `data/site.json` | Site name, tagline, contact email |
 | `src/assets/app.js` | The resizer: crop/zoom, background whitening, JPEG encoding to a KB range |
 | `src/assets/style.css` | Styles (light and dark) |
-| `src/assets/pdf.js` | Images to an A4 PDF under a KB limit (hand-written PDF, no library) |
+| `src/assets/pdf.js` | PDF tools: image to PDF, compress, merge, unlock, organize, PDF to JPG (reads PDFs with pdf.js, writes PDFs by hand) |
+| `src/vendor/pdfjs/` | pdf.js 4.10.38 by Mozilla (Apache-2.0), loaded only when a PDF is opened |
 | `src/assets/lang.js` | Picks Hindi or English before the page paints |
 | `src/icons/` | App icon (SVG source + PNGs from `scripts/make-icons.cjs`) |
 | `scripts/build.mjs` | Generates every page into `dist/` (no dependencies) |

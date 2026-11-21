@@ -49,7 +49,11 @@ than exam names, so the next pages target them.
 - [x] "Compress photo to 10/20/30/50/100/200/500 KB", "20–50 KB" and "signature 10–20 KB" pages
 - [x] Image → PDF under a KB limit (A4, multi-page), linked from each exam's PDF rows
       (NEET/JEE certificates 50–300 KB, IBPS 10th certificate up to 500 KB)
-- [ ] Compress an existing PDF and merge PDFs (needs a bundled PDF renderer such as pdf.js)
+- [x] PDF tools modelled on what iLovePDF/iLoveIMG offer, built our own way and kept in the browser
+      (bundled pdf.js, Apache-2.0): compress PDF, merge PDFs + images, unlock PDF (e-Aadhaar),
+      organize (rotate/reorder/delete), PDF to JPG under a KB limit, convert to JPG
+- [ ] Later from that list: remove photo background (white background rules; needs an AI model),
+      sign PDF, page numbers. Skipped: Word/Excel/PowerPoint conversion and OCR (need a server)
 - [ ] More exams, Hindi-belt first:
   - state PSCs (UPPSC, BPSC, MPPSC, RPSC)
   - UP/Bihar police

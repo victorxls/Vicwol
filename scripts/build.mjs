@@ -110,7 +110,7 @@ ${body}
   <nav>
     <a href="${root}">${h('All exams', 'सभी परीक्षाएँ')}</a>
     <a href="${root}compress/20kb/">${h('Compress to KB', 'KB में कंप्रेस')}</a>
-    <a href="${root}pdf/">${h('Image to PDF', 'इमेज से PDF')}</a>
+    <a href="${root}pdf/compress/">${h('PDF tools', 'PDF टूल')}</a>
     <a href="${root}custom/">${h('Custom size', 'कस्टम साइज़')}</a>
     <a href="${root}privacy/">${h('Privacy', 'गोपनीयता')}</a>
   </nav>
@@ -150,12 +150,21 @@ ${list.map((e) => `  <a class="card" href="exam/${e.slug}/"><strong>${hx(e.name)
   <li>${h('Works offline', 'बिना इंटरनेट भी चलता है')}</li>
   <li>${h('Your photo never leaves your phone', 'फ़ोटो आपके फ़ोन से बाहर नहीं जाती')}</li>
 </ul>
-<h2>${h('Quick tools', 'झटपट टूल')}</h2>
+<h2>${h('Photo tools', 'फ़ोटो टूल')}</h2>
 <div class="grid">
   <a class="card" href="compress/20kb/"><strong>${h('Compress to KB', 'KB में कंप्रेस करें')}</strong>${h('Photo under 10, 20, 50, 100 KB…', 'फ़ोटो 10, 20, 50, 100 KB से कम…')}</a>
-  <a class="card" href="pdf/"><strong>${h('Image to PDF', 'इमेज से PDF')}</strong>${h('Certificates as PDF under a KB limit', 'प्रमाण पत्र, KB सीमा वाली PDF में')}</a>
   <a class="card" href="compress/signature-10-20kb/"><strong>${h('Signature 10–20 KB', 'हस्ताक्षर 10–20 KB')}</strong>${h('Clean white background', 'साफ़ सफ़ेद बैकग्राउंड')}</a>
+  <a class="card" href="convert/jpg/"><strong>${h('Convert to JPG', 'JPG में बदलें')}</strong>${h('PNG, WebP, screenshots', 'PNG, WebP, स्क्रीनशॉट')}</a>
   <a class="card" href="custom/"><strong>${h('Custom size', 'कस्टम साइज़')}</strong>${h('Any pixels and KB', 'कोई भी पिक्सेल और KB')}</a>
+</div>
+<h2>${h('PDF tools', 'PDF टूल')}</h2>
+<div class="grid">
+  <a class="card" href="pdf/compress/"><strong>${h('Compress PDF', 'PDF कंप्रेस करें')}</strong>${h('Under 100, 200, 300 KB…', '100, 200, 300 KB से कम…')}</a>
+  <a class="card" href="pdf/"><strong>${h('Image to PDF', 'इमेज से PDF')}</strong>${h('Certificates as one A4 PDF', 'प्रमाण पत्र, एक A4 PDF में')}</a>
+  <a class="card" href="pdf/merge/"><strong>${h('Merge PDF', 'PDF जोड़ें')}</strong>${h('PDFs and photos into one', 'PDF और फ़ोटो एक में')}</a>
+  <a class="card" href="pdf/unlock/"><strong>${h('Unlock PDF', 'PDF अनलॉक करें')}</strong>${h('Remove e-Aadhaar password', 'ई-आधार पासवर्ड हटाएँ')}</a>
+  <a class="card" href="pdf/to-jpg/"><strong>${h('PDF to JPG', 'PDF से JPG')}</strong>${h('Aadhaar or certificate as JPG', 'आधार या प्रमाण पत्र JPG में')}</a>
+  <a class="card" href="pdf/organize/"><strong>${h('Organize PDF', 'PDF व्यवस्थित करें')}</strong>${h('Rotate, reorder, delete pages', 'पेज घुमाएँ, क्रम बदलें, हटाएँ')}</a>
 </div>
 <h2>${h('Choose your exam', 'अपनी परीक्षा चुनें')}</h2>
 ${cats}
@@ -303,6 +312,8 @@ buildToolPages();
     'कोई अकाउंट नहीं, कोई कुकी नहीं। साइट आपके ब्राउज़र में सिर्फ़ आपकी भाषा की पसंद सेव करती है।')}</p>
 <p>${h('The site is hosted on GitHub Pages. Like any web host, GitHub may keep standard server logs such as IP addresses. See the GitHub Privacy Statement for details.',
     'साइट GitHub Pages पर होस्ट है। किसी भी वेब होस्ट की तरह GitHub सामान्य सर्वर लॉग (जैसे IP एड्रेस) रख सकता है। ज़्यादा जानकारी के लिए GitHub की प्राइवेसी स्टेटमेंट देखें।')}</p>
+<p>${h('PDF files are read with pdf.js by Mozilla (Apache License 2.0), which also runs inside your browser.',
+    'PDF फ़ाइलें Mozilla के pdf.js (Apache License 2.0) से पढ़ी जाती हैं, जो आपके ब्राउज़र के अंदर ही चलता है।')}</p>
 <p>${h('There are currently no ads and no analytics. If that changes, this page will be updated first.',
     'अभी साइट पर कोई विज्ञापन या एनालिटिक्स नहीं है। अगर यह बदलता है, तो पहले यह पेज अपडेट किया जाएगा।')}</p>
 ${contact}`;
@@ -337,6 +348,7 @@ for (const p of pages) {
 
 copyDir(path.join(SRC, 'assets'), path.join(OUT, 'assets'));
 copyDir(path.join(SRC, 'icons'), path.join(OUT, 'icons'));
+copyDir(path.join(SRC, 'vendor'), path.join(OUT, 'vendor'));
 fs.writeFileSync(path.join(OUT, '.nojekyll'), '');
 
 fs.writeFileSync(path.join(OUT, 'manifest.webmanifest'), JSON.stringify({
@@ -478,37 +490,133 @@ ${examLinks('../../')}
     });
   }
 
-  // Image to PDF
+  // Convert to JPG (any image format the browser can open)
   {
+    const cfg = {
+      slug: 'convert-jpg',
+      docs: [{ type: 'custom', kind: 'any', free: true, side: 4000, label: { en: T.custom.en, hi: T.custom.hi }, w: 4000, h: 4000, minKB: 0, maxKB: 5000, file: 'converted' }],
+    };
     const body = `
-<nav class="crumbs"><a href="../">${h('Home', 'होम')}</a> › ${h('Image to PDF', 'इमेज से PDF')}</nav>
-<h1>${h('Image to PDF under a KB limit', 'इमेज से PDF, KB सीमा के अंदर')}</h1>
-<p class="lead">${h('Turn photos of your certificates, marksheets or ID into one A4 PDF that fits the form’s limit, for example 50–300 KB for NEET and JEE or up to 500 KB for IBPS. Nothing is uploaded.',
-    'अपने प्रमाण पत्र, मार्कशीट या ID की फ़ोटो को एक A4 PDF में बदलें, जो फ़ॉर्म की सीमा में आए, जैसे NEET और JEE के लिए 50–300 KB या IBPS के लिए 500 KB तक। कुछ भी अपलोड नहीं होता।')}</p>
+<nav class="crumbs"><a href="../../">${h('Home', 'होम')}</a> › ${h('Convert to JPG', 'JPG में बदलें')}</nav>
+<h1>${h('Convert image to JPG', 'इमेज को JPG में बदलें')}</h1>
+<p class="lead">${h('Turn a PNG, WebP or screenshot into a JPG, the format most forms ask for. It keeps its shape and size. Nothing is uploaded.', 'PNG, WebP या स्क्रीनशॉट को JPG में बदलें, जो ज़्यादातर फ़ॉर्म माँगते हैं। आकार और साइज़ वही रहता है। कुछ भी अपलोड नहीं होता।')}</p>
+<div id="tool" class="tool"><p class="muted">${h('Loading…', 'लोड हो रहा है…')}</p></div>
+${jsonScript('tool-config', cfg)}
+<h2>${h('Good to know', 'ज़रूरी बातें')}</h2>
+<ul class="notes">
+  <li>${h('Transparent areas become white, as forms expect.', 'पारदर्शी हिस्से सफ़ेद हो जाते हैं, जैसा फ़ॉर्म चाहते हैं।')}</li>
+  <li>${h('Need a smaller file too? Use <a href="../../compress/50kb/">compress to KB</a>.', 'फ़ाइल छोटी भी करनी है? <a href="../../compress/50kb/">KB में कंप्रेस</a> इस्तेमाल करें।')}</li>
+  <li>${h('iPhone HEIC photos: share them as “Most Compatible” or take a screenshot first.', 'iPhone की HEIC फ़ोटो: उन्हें “Most Compatible” में शेयर करें या पहले स्क्रीनशॉट लें।')}</li>
+</ul>`;
+    pages.push({
+      urlPath: 'convert/jpg/', depth: 2,
+      html: layout({
+        title: `Convert PNG, WebP or Screenshot to JPG Online Free | ${site.name}`,
+        description: 'Convert PNG, WebP and screenshots to JPG in your browser. Transparent areas become white. Free, private, works offline.',
+        urlPath: 'convert/jpg/', depth: 2, body,
+      }),
+    });
+  }
+
+  // PDF tools: one engine (assets/pdf.js), one page per job
+  const onlyImages = h('To make the file small, every page is saved as an image, so text can no longer be selected. That is fine for form uploads.', 'फ़ाइल छोटी करने के लिए हर पेज इमेज के रूप में सेव होता है, इसलिए टेक्स्ट सेलेक्ट नहीं होगा। फ़ॉर्म अपलोड के लिए यह ठीक है।');
+  const lockedTip = h('Locked PDF? You will be asked for its password.', 'PDF लॉक है? उसका पासवर्ड पूछा जाएगा।');
+  const orderTip = h('Use ↑ to change the order, ↻ to turn a page and ✕ to remove one.', 'क्रम बदलने के लिए ↑, पेज घुमाने के लिए ↻ और हटाने के लिए ✕ दबाएँ।');
+  const PDF_TOOLS = [
+    {
+      slug: '', mode: 'make', nav: h('Image to PDF', 'इमेज से PDF'),
+      h1: h('Image to PDF under a KB limit', 'इमेज से PDF, KB सीमा के अंदर'),
+      lead: h('Turn photos of your certificates, marksheets or ID into one A4 PDF that fits the form’s limit, for example 50–300 KB for NEET and JEE or up to 500 KB for IBPS. Nothing is uploaded.',
+        'अपने प्रमाण पत्र, मार्कशीट या ID की फ़ोटो को एक A4 PDF में बदलें, जो फ़ॉर्म की सीमा में आए, जैसे NEET और JEE के लिए 50–300 KB या IBPS के लिए 500 KB तक। कुछ भी अपलोड नहीं होता।'),
+      title: 'JPG to PDF Under 300 KB / 500 KB for Exam Forms',
+      desc: 'Convert photos of certificates and marksheets into one A4 PDF under any KB limit (50-300 KB for NEET/JEE, 500 KB for IBPS). Free, private, works offline.',
+      steps: [h('Pick the KB limit your form asks for, or type your own.', 'अपने फ़ॉर्म की KB सीमा चुनें या ख़ुद लिखें।'),
+        h('Add one image per page. ', 'हर पेज के लिए एक इमेज जोड़ें। ') + orderTip,
+        h('Tap “Make PDF”, check the green ticks and download.', '“PDF बनाएँ” दबाएँ, हरे टिक देखें और डाउनलोड करें।')],
+      tips: [h('Lay the document flat, take the photo from straight above in daylight, and fill the screen with the page.', 'दस्तावेज़ को सीधा रखें, दिन की रोशनी में ठीक ऊपर से फ़ोटो खींचें और पेज को पूरी स्क्रीन में भरें।'),
+        h('Keep “Make background white” on for phone photos. Turn it off for colour documents such as photo ID cards.', 'फ़ोन से खींची फ़ोटो के लिए “बैकग्राउंड सफ़ेद करें” चालू रखें। फ़ोटो वाले ID कार्ड जैसे रंगीन दस्तावेज़ों के लिए इसे बंद करें।'),
+        h('If the PDF is too blurry, raise the KB limit if your form allows it, or use fewer pages.', 'अगर PDF बहुत धुंधली है, तो फ़ॉर्म अनुमति दे तो KB सीमा बढ़ाएँ, या कम पेज रखें।')],
+    },
+    {
+      slug: 'compress', mode: 'compress', nav: h('Compress PDF', 'PDF कंप्रेस'),
+      h1: h('Compress PDF to any KB size', 'PDF को किसी भी KB साइज़ में कंप्रेस करें'),
+      lead: h('Make your certificate, marksheet or ID PDF small enough for the form, for example under 100 KB, 200 KB or 300 KB. Nothing is uploaded.', 'अपने प्रमाण पत्र, मार्कशीट या ID की PDF को फ़ॉर्म के लायक़ छोटा बनाएँ, जैसे 100 KB, 200 KB या 300 KB से कम। कुछ भी अपलोड नहीं होता।'),
+      title: 'Compress PDF to 100 KB, 200 KB, 300 KB Online Free',
+      desc: 'Compress a PDF to under 100, 200, 300 or 500 KB for exam and job forms. Free, works in your browser, nothing is uploaded. Hindi and English.',
+      steps: [h('Choose your PDF.', 'अपनी PDF चुनें।'), h('Pick the KB limit your form asks for.', 'अपने फ़ॉर्म की KB सीमा चुनें।'), h('Tap “Compress PDF” and download it.', '“PDF कंप्रेस करें” दबाएँ और डाउनलोड करें।')],
+      tips: [onlyImages, h('If your PDF is already inside the limit, we keep it exactly as it is.', 'अगर आपकी PDF पहले से सीमा के अंदर है, तो हम उसे वैसा ही रखते हैं।'), lockedTip],
+    },
+    {
+      slug: 'merge', mode: 'merge', nav: h('Merge PDF', 'PDF जोड़ें'),
+      h1: h('Merge PDFs and images into one PDF', 'PDF और इमेज को एक PDF में जोड़ें'),
+      lead: h('Combine certificates, marksheets and photos into one PDF in the order you choose, within the form’s KB limit. Nothing is uploaded.', 'प्रमाण पत्र, मार्कशीट और फ़ोटो को अपनी पसंद के क्रम में एक PDF में जोड़ें, फ़ॉर्म की KB सीमा के अंदर। कुछ भी अपलोड नहीं होता।'),
+      title: 'Merge PDF and JPG into One PDF Online Free',
+      desc: 'Merge several PDFs and photos into one PDF under your KB limit. Reorder and rotate pages. Free, private, works offline.',
+      steps: [h('Add your PDFs and images. You can add more files at any time.', 'अपनी PDF और इमेज जोड़ें। आप कभी भी और फ़ाइलें जोड़ सकते हैं।'), orderTip, h('Pick the KB limit, tap “Merge into one PDF” and download.', 'KB सीमा चुनें, “एक PDF में जोड़ें” दबाएँ और डाउनलोड करें।')],
+      tips: [onlyImages, h('Up to 30 pages in total.', 'कुल 30 पेज तक।'), lockedTip],
+    },
+    {
+      slug: 'unlock', mode: 'unlock', nav: h('Unlock PDF', 'PDF अनलॉक'),
+      h1: h('Unlock PDF: remove the password (e-Aadhaar too)', 'PDF अनलॉक करें: पासवर्ड हटाएँ (ई-आधार भी)'),
+      lead: h('Open a password-protected PDF with its password and save a copy without the password, sized for your form. You must know the password; this tool does not guess it.', 'पासवर्ड वाली PDF को उसके पासवर्ड से खोलें और बिना पासवर्ड की कॉपी सेव करें, फ़ॉर्म के साइज़ में। आपको पासवर्ड पता होना चाहिए; यह टूल पासवर्ड का अनुमान नहीं लगाता।'),
+      title: 'Unlock PDF: Remove e-Aadhaar PDF Password Online',
+      desc: 'Remove the password from your own PDF, such as e-Aadhaar, and save it under a KB limit for forms. The file and password never leave your phone.',
+      steps: [h('Choose the locked PDF and type its password.', 'लॉक PDF चुनें और उसका पासवर्ड डालें।'), h('Pick a KB limit if your form has one.', 'अगर फ़ॉर्म में KB सीमा है तो उसे चुनें।'), h('Tap “Save unlocked PDF” and download.', '“अनलॉक PDF सेव करें” दबाएँ और डाउनलोड करें।')],
+      tips: [h('e-Aadhaar password: the first four letters of your name in capital letters, then your year of birth. Example: RAHU1990.', 'ई-आधार पासवर्ड: आपके नाम के पहले चार अक्षर कैपिटल में, फिर जन्म का साल। उदाहरण: RAHU1990।'),
+        h('Your file and password stay on your phone. Nothing is uploaded.', 'आपकी फ़ाइल और पासवर्ड आपके फ़ोन पर ही रहते हैं। कुछ भी अपलोड नहीं होता।'),
+        h('Need a JPG of your Aadhaar instead? Use <a href="../to-jpg/">PDF to JPG</a>.', 'आधार की JPG चाहिए? <a href="../to-jpg/">PDF से JPG</a> इस्तेमाल करें।')],
+    },
+    {
+      slug: 'organize', mode: 'organize', nav: h('Organize PDF', 'PDF व्यवस्थित करें'),
+      h1: h('Rotate, reorder or delete PDF pages', 'PDF के पेज घुमाएँ, क्रम बदलें या हटाएँ'),
+      lead: h('Fix sideways pages, put pages in the right order, or remove pages you don’t need, then save the PDF. To take out a few pages, delete the rest.', 'टेढ़े पेज सीधे करें, पेज सही क्रम में लगाएँ या बेकार पेज हटाएँ, फिर PDF सेव करें। कुछ पेज अलग निकालने हों तो बाक़ी पेज हटा दें।'),
+      title: 'Rotate PDF, Reorder or Delete PDF Pages Online Free',
+      desc: 'Rotate, reorder, delete or extract PDF pages in your browser and save the result. Free, private, works offline.',
+      steps: [h('Choose your PDF.', 'अपनी PDF चुनें।'), orderTip, h('Tap “Save PDF” and download.', '“PDF सेव करें” दबाएँ और डाउनलोड करें।')],
+      tips: [onlyImages, lockedTip],
+    },
+    {
+      slug: 'to-jpg', mode: 'tojpg', nav: h('PDF to JPG', 'PDF से JPG'),
+      h1: h('PDF to JPG under a KB limit', 'PDF से JPG, KB सीमा के अंदर'),
+      lead: h('Turn a PDF page, such as your Aadhaar or a certificate, into a JPG of the right size, for example 10–200 KB for the NEET and JEE identity proof. Nothing is uploaded.', 'PDF के पेज, जैसे आधार या प्रमाण पत्र, को सही साइज़ की JPG में बदलें, जैसे NEET और JEE पहचान पत्र के लिए 10–200 KB। कुछ भी अपलोड नहीं होता।'),
+      title: 'PDF to JPG Under 200 KB / 100 KB / 50 KB Online Free',
+      desc: 'Convert PDF pages, such as e-Aadhaar or certificates, to JPG under any KB limit for exam forms. Free, private, works offline.',
+      steps: [h('Choose your PDF. Remove the pages you don’t need with ✕.', 'अपनी PDF चुनें। जिन पेज की ज़रूरत नहीं, उन्हें ✕ से हटाएँ।'), h('Pick the KB limit for each JPG.', 'हर JPG के लिए KB सीमा चुनें।'), h('Tap “Convert to JPG” and download each page.', '“JPG में बदलें” दबाएँ और हर पेज डाउनलोड करें।')],
+      tips: [lockedTip, h('Each page becomes its own JPG file.', 'हर पेज अलग JPG फ़ाइल बनता है।')],
+    },
+  ];
+  for (const t of PDF_TOOLS) {
+    const urlPath = t.slug ? `pdf/${t.slug}/` : 'pdf/';
+    const depth = t.slug ? 2 : 1;
+    const up = '../'.repeat(depth);
+    const pdfRoot = t.slug ? '../' : './';
+    const nav = PDF_TOOLS.map((o) => (o === t
+      ? `<a class="current" aria-current="page" href="./">${o.nav}</a>`
+      : `<a href="${pdfRoot}${o.slug ? `${o.slug}/` : ''}">${o.nav}</a>`)).join('\n');
+    const body = `
+<nav class="crumbs"><a href="${up}">${h('Home', 'होम')}</a> › ${h('PDF tools', 'PDF टूल')}</nav>
+<h1>${t.h1}</h1>
+<p class="lead">${t.lead}</p>
+<div class="other">
+${nav}
+</div>
 <div id="pdftool" class="tool"><p class="muted">${h('Loading…', 'लोड हो रहा है…')}</p></div>
+${jsonScript('pdf-config', { mode: t.mode })}
 <h2>${h('How to use', 'कैसे इस्तेमाल करें')}</h2>
 <ol class="steps">
-  <li>${h('Pick the KB limit your form asks for, or type your own.', 'अपने फ़ॉर्म की KB सीमा चुनें या ख़ुद लिखें।')}</li>
-  <li>${h('Add one image per page. Use ↑ to change the order and ↻ to turn a page.', 'हर पेज के लिए एक इमेज जोड़ें। क्रम बदलने के लिए ↑ और पेज घुमाने के लिए ↻ दबाएँ।')}</li>
-  <li>${h('Tap “Make PDF”, check the green ticks and download.', '“PDF बनाएँ” दबाएँ, हरे टिक देखें और डाउनलोड करें।')}</li>
+${t.steps.map((x) => `  <li>${x}</li>`).join('\n')}
 </ol>
-<h2>${h('Tips for clear documents', 'साफ़ दस्तावेज़ के लिए सुझाव')}</h2>
+<h2>${h('Good to know', 'ज़रूरी बातें')}</h2>
 <ul class="notes">
-  <li>${h('Lay the document flat, take the photo from straight above in daylight, and fill the screen with the page.', 'दस्तावेज़ को सीधा रखें, दिन की रोशनी में ठीक ऊपर से फ़ोटो खींचें और पेज को पूरी स्क्रीन में भरें।')}</li>
-  <li>${h('Keep “Make background white” on for phone photos. Turn it off for colour documents such as photo ID cards.', 'फ़ोन से खींची फ़ोटो के लिए “बैकग्राउंड सफ़ेद करें” चालू रखें। फ़ोटो वाले ID कार्ड जैसे रंगीन दस्तावेज़ों के लिए इसे बंद करें।')}</li>
-  <li>${h('If the PDF is too blurry, raise the KB limit if your form allows it, or use fewer pages.', 'अगर PDF बहुत धुंधली है, तो फ़ॉर्म अनुमति दे तो KB सीमा बढ़ाएँ, या कम पेज रखें।')}</li>
+${t.tips.map((x) => `  <li>${x}</li>`).join('\n')}
 </ul>
 <h2>${h('Exam presets', 'परीक्षा प्रीसेट')}</h2>
 <div class="other">
-${examLinks('../')}
+${examLinks(up)}
 </div>`;
     pages.push({
-      urlPath: 'pdf/', depth: 1,
-      html: layout({
-        title: `JPG to PDF Under 300 KB / 500 KB for Exam Forms | ${site.name}`,
-        description: 'Convert photos of certificates and marksheets into one A4 PDF under any KB limit (50-300 KB for NEET/JEE, 500 KB for IBPS). Free, private, works offline.',
-        urlPath: 'pdf/', depth: 1, body, scripts: ['assets/pdf.js'],
-      }),
+      urlPath, depth,
+      html: layout({ title: `${t.title} | ${site.name}`, description: t.desc, urlPath, depth, body, scripts: ['assets/pdf.js'] }),
     });
   }
 }

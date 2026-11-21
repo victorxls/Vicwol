@@ -15,12 +15,15 @@ const data = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'exam
 
 const PHONE = { viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true };
 const failures = [];
+const TEXT_PDF = path.join(OUT, 'input-text.pdf');
+const LOCKED_PDF = path.join(OUT, 'input-locked.pdf');
+const PNG_IN = path.join(OUT, 'input-transparent.png');
 const fail = (msg) => { failures.push(msg); console.log('  FAIL', msg); };
 
 function serve() {
   const types = {
     '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml',
-    '.png': 'image/png', '.webmanifest': 'application/manifest+json', '.xml': 'application/xml', '.txt': 'text/plain',
+    '.png': 'image/png', '.mjs': 'text/javascript', '.webmanifest': 'application/manifest+json', '.xml': 'application/xml', '.txt': 'text/plain',
   };
   const srv = http.createServer((req, res) => {
     let f = path.join(DIST, decodeURIComponent(new URL(req.url, 'http://x').pathname));
@@ -218,6 +221,127 @@ async function runDoc(page, files, slug, d, i, multi) {
     } catch (e) { fail(`${tag}: pypdf could not read the PDF: ${e.message.split('\n').slice(-2).join(' ')}`); }
     console.log(`  ok ${tag}: ${(r.bytes / 1024).toFixed(1)} KB, pypdf: ${check} -> ${r.name}`);
   }
+
+  // ---- PDF tools (pdf.js): compress, merge, unlock, organize, to JPG, plus convert to JPG
+  {
+    const tp = await ctx.newPage();
+    const para = 'This certifies that the candidate has passed the Secondary School Examination with distinction. '.repeat(12);
+    await tp.setContent(`<html><body style="font:15px serif;padding:20px"><h1>Class X Marksheet</h1><p>${para}</p><div style="break-after:page"></div><h1>Page two</h1><p>${para}</p></body></html>`);
+    await tp.pdf({ path: TEXT_PDF, format: 'A4' });
+    await tp.evaluate(() => {});
+    const png = await tp.evaluate(() => {
+      const c = document.createElement('canvas'); c.width = 800; c.height = 600;
+      const x = c.getContext('2d'); x.fillStyle = '#d33'; x.beginPath(); x.arc(400, 300, 200, 0, Math.PI * 2); x.fill();
+      return c.toDataURL('image/png');
+    });
+    fs.writeFileSync(PNG_IN, Buffer.from(png.split(',')[1], 'base64'));
+    await tp.close();
+    execFileSync('python3', ['-I', '-c', 'import sys, pypdf\nr = pypdf.PdfReader(sys.argv[1]); w = pypdf.PdfWriter(); w.append(r)\nw.encrypt(user_password="RAHU1990", owner_password="owner-x", algorithm="RC4-128"); w.write(sys.argv[2])', TEXT_PDF, LOCKED_PDF]);
+  }
+  const IMG_PDF = path.join(OUT, 'out-class-10.pdf');
+  const pypdfInfo = (file) => execFileSync('python3', ['-I', '-c', [
+    'import sys, pypdf', 'r = pypdf.PdfReader(sys.argv[1], strict=True)',
+    'print(len(r.pages), r.is_encrypted, " ".join(f"{round(float(p.mediabox.width))}x{round(float(p.mediabox.height))}" for p in r.pages))',
+  ].join('\n'), file], { encoding: 'utf8' }).trim();
+  async function savePdfResult(name) {
+    const r = await page.evaluate(async () => {
+      const a = document.querySelector('#pdftool .download');
+      const buf = new Uint8Array(await (await (await fetch(a.href)).blob()).arrayBuffer());
+      let bin = '';
+      for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000));
+      return { b64: btoa(bin), ...document.querySelector('#pdftool .s-result').dataset };
+    });
+    const file = path.join(OUT, `out-tool-${name}.pdf`);
+    fs.writeFileSync(file, Buffer.from(r.b64, 'base64'));
+    return { ...r, file, info: pypdfInfo(file) };
+  }
+  const waitPages = (n) => page.waitForFunction((k) => document.querySelectorAll('#pdftool .pages .page').length === k, n, { timeout: 60000 });
+  const makeAndWait = async () => { await page.click('#pdftool .make'); await page.waitForSelector('#pdftool .s-result:not([hidden])', { timeout: 120000 }); };
+
+  // compress: image-heavy PDF down to 100 KB
+  await page.goto(`${base}pdf/compress/`);
+  await page.setInputFiles('#pdftool .f-gallery', IMG_PDF);
+  await waitPages(2);
+  await page.click('#pdftool .chips .tab[data-p="2"]');
+  await makeAndWait();
+  let r = await savePdfResult('compress');
+  if (Number(r.bytes) > 100 * 1000 || r.kept !== 'false' || !r.info.startsWith('2 False')) fail(`pdf/compress: ${r.bytes} bytes kept=${r.kept} pypdf=${r.info}`);
+  console.log(`  ok pdf/compress: ${fs.statSync(IMG_PDF).size} -> ${r.bytes} bytes, pypdf: ${r.info}`);
+  // compress: a small PDF that already fits is kept unchanged
+  await page.goto(`${base}pdf/compress/`);
+  await page.setInputFiles('#pdftool .f-gallery', TEXT_PDF);
+  await waitPages(2);
+  await page.click('#pdftool .chips .tab[data-p="1"]');
+  await makeAndWait();
+  r = await savePdfResult('compress-kept');
+  if (r.kept !== 'true' || Number(r.bytes) !== fs.statSync(TEXT_PDF).size) fail(`pdf/compress kept: kept=${r.kept} bytes=${r.bytes}`);
+  console.log(`  ok pdf/compress keeps a PDF that already fits (${r.bytes} bytes)`);
+
+  // merge: text PDF + image PDF + photo
+  await page.goto(`${base}pdf/merge/`);
+  await page.setInputFiles('#pdftool .f-gallery', [TEXT_PDF, IMG_PDF, files.photo]);
+  await waitPages(5);
+  await makeAndWait();
+  r = await savePdfResult('merge');
+  if (!r.info.startsWith('5 False') || Number(r.bytes) > 1000 * 1000) fail(`pdf/merge: ${r.bytes} bytes pypdf=${r.info}`);
+  console.log(`  ok pdf/merge: ${r.bytes} bytes, pypdf: ${r.info}`);
+
+  // unlock: wrong password first, then the right one
+  await page.goto(`${base}pdf/unlock/`);
+  await page.setInputFiles('#pdftool .f-gallery', LOCKED_PDF);
+  await page.waitForSelector('#pdftool .pw-box:not([hidden])');
+  await page.fill('#pdftool .pw', 'WRONG123');
+  await page.click('#pdftool .pw-ok');
+  await page.waitForFunction(() => /Wrong password/.test(document.querySelector('#pdftool .pw-msg').textContent) && !document.querySelector('#pdftool .pw-box').hidden);
+  await page.fill('#pdftool .pw', 'RAHU1990');
+  await page.click('#pdftool .pw-ok');
+  await waitPages(2);
+  await makeAndWait();
+  r = await savePdfResult('unlock');
+  if (!r.info.startsWith('2 False')) fail(`pdf/unlock: output still locked or wrong pages: ${r.info}`);
+  console.log(`  ok pdf/unlock: wrong password rejected, unlocked copy ${r.bytes} bytes, pypdf: ${r.info}`);
+
+  // organize: delete page 1, rotate the other
+  await page.goto(`${base}pdf/organize/`);
+  await page.setInputFiles('#pdftool .f-gallery', TEXT_PDF);
+  await waitPages(2);
+  await page.click('#pdftool .pages .page:nth-child(1) [data-act="del"]');
+  await waitPages(1);
+  await page.click('#pdftool .pages .page:nth-child(1) [data-act="rot"]');
+  await makeAndWait();
+  r = await savePdfResult('organize');
+  const odims = (r.info.split(' ')[2] || '0x0').split('x').map(Number);
+  if (!r.info.startsWith('1 False') || !(odims[0] > odims[1])) fail(`pdf/organize: ${r.info}`);
+  console.log(`  ok pdf/organize: delete + rotate -> pypdf: ${r.info}`);
+
+  // PDF to JPG: each page 10–200 KB
+  await page.goto(`${base}pdf/to-jpg/`);
+  await page.setInputFiles('#pdftool .f-gallery', TEXT_PDF);
+  await waitPages(2);
+  await makeAndWait();
+  const jpgs = await page.evaluate(async () => Promise.all([...document.querySelectorAll('#pdftool .jpgs li')].map(async (li) => {
+    const blob = await (await fetch(li.querySelector('img').src)).blob();
+    const head = new Uint8Array(await blob.slice(0, 2).arrayBuffer());
+    return { bytes: blob.size, w: li.dataset.w, h: li.dataset.h, jpeg: head[0] === 0xFF && head[1] === 0xD8, name: li.querySelector('a').getAttribute('download') };
+  })));
+  if (jpgs.length !== 2 || jpgs.some((j) => !j.jpeg || j.bytes < 10 * 1024 || j.bytes > 200 * 1000)) fail(`pdf/to-jpg: ${JSON.stringify(jpgs)}`);
+  console.log(`  ok pdf/to-jpg: ${jpgs.map((j) => `${j.name} ${j.w}×${j.h} ${(j.bytes / 1024).toFixed(1)} KB`).join(', ')}`);
+
+  // Convert PNG (with transparency) to JPG: shape kept, transparent corner becomes white
+  await page.goto(`${base}convert/jpg/`);
+  await page.setInputFiles('.f-gallery', PNG_IN);
+  await page.waitForSelector('.s-edit:not([hidden])');
+  await page.click('.make');
+  await page.waitForSelector('.s-result:not([hidden])');
+  const cj = await page.evaluate(async () => {
+    const blob = await (await fetch(document.querySelector('.s-result .out').src)).blob();
+    const bmp = await createImageBitmap(blob);
+    const c = document.createElement('canvas'); c.width = bmp.width; c.height = bmp.height;
+    const x = c.getContext('2d'); x.drawImage(bmp, 0, 0);
+    return { type: blob.type, w: bmp.width, h: bmp.height, corner: Array.from(x.getImageData(2, 2, 1, 1).data.slice(0, 3)) };
+  });
+  if (cj.type !== 'image/jpeg' || cj.w !== 800 || cj.h !== 600 || cj.corner.some((v) => v < 245)) fail(`convert/jpg: ${JSON.stringify(cj)}`);
+  console.log(`  ok convert/jpg: PNG -> JPG ${cj.w}×${cj.h}, corner ${cj.corner}`);
   await ctx.close();
 
   // 2) Real CSP, real gestures and options, plus screenshots for a visual check.
@@ -268,6 +392,17 @@ async function runDoc(page, files, slug, d, i, multi) {
   if (dims[0] !== '300' || dims[1] !== '400' || dims[3] !== 'true') fail(`custom result wrong: ${dims}`);
   console.log(`custom with stamp: ${dims[0]}×${dims[1]}, ${(dims[2] / 1024).toFixed(1)} KB`);
   await p2.screenshot({ path: path.join(OUT, 'shot-custom-result.png'), fullPage: true });
+  // pdf.js under the real security policy (no eval, module worker, same-origin fonts)
+  await p2.goto(`${base}pdf/unlock/`);
+  await p2.setInputFiles('#pdftool .f-gallery', LOCKED_PDF);
+  await p2.waitForSelector('#pdftool .pw-box:not([hidden])');
+  await p2.fill('#pdftool .pw', 'RAHU1990');
+  await p2.click('#pdftool .pw-ok');
+  await p2.waitForFunction(() => document.querySelectorAll('#pdftool .pages .page').length === 2, null, { timeout: 60000 });
+  await p2.click('#pdftool .make');
+  await p2.waitForSelector('#pdftool .s-result:not([hidden])', { timeout: 120000 });
+  await p2.screenshot({ path: path.join(OUT, 'shot-unlock.png'), fullPage: true });
+  console.log('unlock under real CSP: ok');
   await p2.waitForTimeout(500);
   const swOk = await p2.evaluate(async () => !!(await navigator.serviceWorker.getRegistration()));
   if (!swOk) fail('service worker not registered');

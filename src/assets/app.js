@@ -860,7 +860,7 @@
 
   // Shared with other tools on the site (pdf.js).
   window.SahiSize = {
-    h, decodeToCanvas, whiten, drawScaled, rotate90, makeCanvas, toJpeg, byteLimits, fmtNum, nextFrame,
+    h, decodeToCanvas, whiten, drawScaled, rotate90, makeCanvas, toJpeg, byteLimits, fmtNum, nextFrame, encodeJpeg,
     LOAD_MAX_SIDE, privacyText: S.privacy, inAppText: S.inApp, badFileText: S.badFile,
   };
 })();
