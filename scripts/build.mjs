@@ -61,8 +61,25 @@ const hasScan = (ex) => ex.docs.some((d) => d.kind === 'scan');
 const toolNoun = (ex) => hasPhoto(ex)
   ? { en: 'Photo & Signature Resizer', hi: 'फ़ोटो और हस्ताक्षर रिसाइज़र' }
   : { en: 'Signature Resizer', hi: 'हस्ताक्षर रिसाइज़र' };
+const enOf = (html) => ((html.match(/<span class="en">(.*?)<\/span>/) || [])[1] || '').replace(/<[^>]+>/g, '');
+const breadcrumbLd = (items) => (SITE_URL ? {
+  '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+  itemListElement: items.map((it, i) => ({ '@type': 'ListItem', position: i + 1, name: it.name, item: SITE_URL + it.path })),
+} : null);
+const appLd = (name, urlPath) => ({
+  '@context': 'https://schema.org', '@type': 'WebApplication', name, applicationCategory: 'UtilitiesApplication',
+  operatingSystem: 'Any', browserRequirements: 'Requires JavaScript', inLanguage: ['en', 'hi'], isAccessibleForFree: true,
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' }, ...(SITE_URL ? { url: SITE_URL + urlPath } : {}),
+});
+const faqLd = (qa) => ({
+  '@context': 'https://schema.org', '@type': 'FAQPage',
+  mainEntity: qa.map((x) => ({ '@type': 'Question', name: x.q.en, acceptedAnswer: { '@type': 'Answer', text: x.a.en } })),
+});
+const toolPageLd = (name, urlPath) => [appLd(name, urlPath), breadcrumbLd([{ name: 'Home', path: '' }, { name, path: urlPath }])];
 const toolConfig = (ex) => ({
   slug: ex.slug,
+  exams: data.exams.map((e) => ({ slug: e.slug, name: e.name.en })),
+  ...(ex.live ? { live: ex.live } : {}),
   docs: ex.docs.map((d) => ({
     type: d.type, kind: d.kind, label: d.label, w: d.w, h: d.h, minKB: d.minKB, maxKB: d.maxKB,
     ...(d.dpi ? { dpi: d.dpi } : {}), ...(d.size ? { size: d.size } : {}), ...(d.file ? { file: d.file } : {}),
@@ -93,7 +110,7 @@ ${ogUrl}
 <link rel="apple-touch-icon" href="${root}icons/icon-192.png">
 <link rel="stylesheet" href="${root}assets/style.css?v=${VERSION}">
 <script src="${root}assets/lang.js?v=${VERSION}"></script>
-${jsonld ? jsonScript(null, jsonld, 'application/ld+json') : ''}
+${[].concat(jsonld || []).filter(Boolean).map((o) => jsonScript(null, o, 'application/ld+json')).join('\n')}
 </head>
 <body>
 <header class="top">
@@ -211,6 +228,40 @@ for (const ex of data.exams) {
   const badge = ex.verified
     ? `<p class="verified">✓ ${h('Checked against the official notification:', 'आधिकारिक नोटिफ़िकेशन से जाँचा गया:')} <a href="${esc(ex.verified.url)}" target="_blank" rel="noopener">${esc(ex.verified.title)}</a></p>`
     : `<p class="unverified">⚠ ${h('Not yet checked against the official notification. These sizes come from exam-guide sites, so please confirm them in your notice.', 'अभी आधिकारिक नोटिफ़िकेशन से नहीं जाँचा गया। ये साइज़ एग्ज़ाम-गाइड वेबसाइटों से लिए गए हैं, कृपया अपने नोटिस में पुष्टि करें।')}</p>`;
+  const faq = [];
+  for (const d of ex.docs) {
+    const extra = [d.size, d.dpi ? `${d.dpi} DPI` : ''].filter(Boolean).join(', ');
+    faq.push({
+      q: { en: `What size should the ${ex.name.en} ${d.label.en.toLowerCase()} be?`, hi: `${ex.name.hi} ${d.label.hi} का साइज़ क्या होना चाहिए?` },
+      a: { en: `${d.w} × ${d.h} pixels${extra ? ` (${extra})` : ''}, between ${d.minKB} KB and ${d.maxKB} KB, in JPG format.`, hi: `${d.w} × ${d.h} पिक्सेल${extra ? ` (${extra})` : ''}, ${d.minKB} KB से ${d.maxKB} KB के बीच, JPG फ़ॉर्मेट में।` },
+    });
+  }
+  for (const d of ex.pdfs || []) {
+    const range = d.minKB > 0 ? { en: `between ${d.minKB} KB and ${d.maxKB} KB`, hi: `${d.minKB} KB से ${d.maxKB} KB के बीच` } : { en: `of up to ${d.maxKB} KB`, hi: `अधिकतम ${d.maxKB} KB` };
+    faq.push({
+      q: { en: `What size should the ${d.en} PDF be for ${ex.name.en}?`, hi: `${ex.name.hi} के लिए ${d.hi} की PDF कितनी बड़ी होनी चाहिए?` },
+      a: { en: `One A4 PDF ${range.en}. You can make it from photos with our image-to-PDF tool.`, hi: `एक A4 PDF, ${range.hi}। आप इसे हमारे इमेज-से-PDF टूल से फ़ोटो से बना सकते हैं।` },
+    });
+  }
+  if (ex.live === 'extra') {
+    faq.push({
+      q: { en: `Do I also need a live photo for ${ex.name.en}?`, hi: `क्या ${ex.name.hi} के लिए लाइव फ़ोटो भी चाहिए?` },
+      a: { en: 'Yes. During the application you also take a live photo with your webcam or phone camera, in addition to uploading the photo file. Sit in good light against a plain, light background.', hi: 'हाँ। आवेदन के दौरान फ़ोटो फ़ाइल अपलोड करने के साथ वेबकैम या फ़ोन कैमरे से लाइव फ़ोटो भी लेनी होती है। अच्छी रोशनी में सादे, हल्के बैकग्राउंड के सामने बैठें।' },
+    });
+  } else if (ex.live === 'only') {
+    faq.push({
+      q: { en: `Do I need to upload a photo file for ${ex.name.en}?`, hi: `क्या ${ex.name.hi} के लिए फ़ोटो फ़ाइल अपलोड करनी होती है?` },
+      a: { en: `No. ${ex.name.en} takes your photo live with the camera during the application. You only upload the files listed above, such as your signature.`, hi: `नहीं। ${ex.name.hi} आवेदन के दौरान कैमरे से लाइव फ़ोटो लेता है। आपको सिर्फ़ ऊपर दी गई फ़ाइलें, जैसे हस्ताक्षर, अपलोड करनी होती हैं।` },
+    });
+  }
+  faq.push({
+    q: { en: 'Is my photo uploaded to your server?', hi: 'क्या मेरी फ़ोटो आपके सर्वर पर अपलोड होती है?' },
+    a: { en: `No. ${site.name} works inside your browser, so your photo never leaves your phone. After the first visit it even works offline.`, hi: `नहीं। ${site.name} आपके ब्राउज़र के अंदर ही काम करता है, इसलिए आपकी फ़ोटो आपके फ़ोन से बाहर नहीं जाती। पहली बार खुलने के बाद यह बिना इंटरनेट भी चलता है।` },
+  });
+  faq.push({
+    q: { en: 'What if the form rejects my file?', hi: 'अगर फ़ॉर्म मेरी फ़ाइल रिजेक्ट कर दे तो?' },
+    a: { en: 'Check the latest notification on the official website, then use “Change size limits” in the tool to enter its exact numbers.', hi: 'आधिकारिक वेबसाइट पर नया नोटिफ़िकेशन देखें, फिर टूल में “साइज़ की सीमा बदलें” से उसके सही आँकड़े डालें।' },
+  });
   const tips = hasScan(ex) ? `<li>${h('For signatures and impressions, use plain white paper. Take the photo in daylight from straight above and avoid your phone’s shadow.', 'हस्ताक्षर और निशान के लिए सादा सफ़ेद कागज़ लें। दिन की रोशनी में ठीक ऊपर से फ़ोटो खींचें और फ़ोन की परछाईं से बचें।')}</li>` : '';
   const others = data.exams.filter((e) => e.slug !== ex.slug)
     .map((e) => `<a href="../${e.slug}/">${hx(e.name)}</a>`).join('\n');
@@ -242,6 +293,10 @@ ${ex.notes.map((n) => `<li>${hx(n)}</li>`).join('\n')}
   <li>${h('Tap “Make my file”. Check the green ticks, then download the file and upload it to your form.', '“मेरी फ़ाइल बनाएँ” दबाएँ। हरे टिक देखें, फिर फ़ाइल डाउनलोड करके अपने फ़ॉर्म में अपलोड करें।')}</li>
   ${tips}
 </ol>
+<h2>${h('Questions', 'सवाल-जवाब')}</h2>
+<div class="faq">
+${faq.map((x) => `<details><summary>${hx(x.q)}</summary><p>${hx(x.a)}</p></details>`).join('\n')}
+</div>
 <section class="sources">
 <h2>${h('Sources', 'स्रोत')}</h2>
 <p>${ex.verified
@@ -264,6 +319,7 @@ ${others}
       title: `${ex.name.en} ${noun.en} 2026: ${shortSpec} | ${site.name}`,
       description: `Resize your ${ex.name.en} ${ex.docs.map((d) => `${d.label.en.toLowerCase()} (${d.w}×${d.h} px, ${kbRange(d)})`).join(', ')}. Free, works offline, nothing is uploaded. Hindi and English.`,
       urlPath, depth: 2, body,
+      jsonld: [appLd(`${ex.name.en} ${noun.en}`, urlPath), breadcrumbLd([{ name: 'Home', path: '' }, { name: ex.name.en, path: urlPath }]), faqLd(faq)],
     }),
   });
 }
@@ -283,7 +339,7 @@ ${others}
 ${jsonScript('tool-config', cfg)}
 <h2>${h('Tips', 'सुझाव')}</h2>
 <ul class="notes">
-  <li>${h('If the form gives the size in cm, multiply by about 100 to get pixels (3.5 cm ≈ 350 px).', 'अगर फ़ॉर्म में साइज़ सेमी में दिया है, तो लगभग 100 से गुणा करके पिक्सेल निकालें (3.5 सेमी ≈ 350 px)।')}</li>
+  <li>${h('If the form gives the size in cm or mm, open “Change size limits”, choose cm or mm and type it in. Pixels are worked out from the DPI (200 if you leave it empty).', 'अगर फ़ॉर्म में साइज़ सेमी या मिमी में दिया है, तो “साइज़ की सीमा बदलें” खोलें, cm या mm चुनें और साइज़ लिखें। पिक्सेल DPI से निकाले जाते हैं (ख़ाली छोड़ने पर 200)।')}</li>
   <li>${h('Turn on “Make background white” for signatures, thumb impressions and handwritten documents.', 'हस्ताक्षर, अँगूठे के निशान और हाथ से लिखे दस्तावेज़ों के लिए “बैकग्राउंड सफ़ेद करें” चालू करें।')}</li>
   <li>${h('Some state exams ask for your name and date on the photo. Use “Add name and date below the photo”.', 'कुछ राज्य परीक्षाएँ फ़ोटो पर नाम और तारीख़ माँगती हैं। “फ़ोटो के नीचे नाम और तारीख़ जोड़ें” का इस्तेमाल करें।')}</li>
 </ul>`;
@@ -292,7 +348,7 @@ ${jsonScript('tool-config', cfg)}
     html: layout({
       title: `Custom Size Photo & Signature Resizer (KB and pixels) | ${site.name}`,
       description: 'Resize any photo or signature to an exact width, height and KB range for any online form. Add name and date, whiten signature backgrounds. Free and private.',
-      urlPath: 'custom/', depth: 1, body,
+      urlPath: 'custom/', depth: 1, body, jsonld: toolPageLd('Custom size photo and signature resizer', 'custom/'),
     }),
   });
 }
@@ -485,7 +541,7 @@ ${examLinks('../../')}
           : c.min ? `Resize Photo to ${c.min}-${c.max} KB Online, Free | ${site.name}` : `Compress Photo to ${c.max} KB Online, Free | ${site.name}`,
         description: c.scan ? `Resize your signature to ${c.min}-${c.max} KB JPG with a clean white background for any exam form. Free, private, works offline.`
           : `${c.min ? `Resize any photo to ${c.min}-${c.max} KB` : `Compress any photo to under ${c.max} KB`} in seconds. Free, works offline, your photo is never uploaded. Hindi and English.`,
-        urlPath, depth: 2, body,
+        urlPath, depth: 2, body, jsonld: toolPageLd(nm.en, urlPath),
       }),
     });
   }
@@ -513,7 +569,7 @@ ${jsonScript('tool-config', cfg)}
       html: layout({
         title: `Convert PNG, WebP or Screenshot to JPG Online Free | ${site.name}`,
         description: 'Convert PNG, WebP and screenshots to JPG in your browser. Transparent areas become white. Free, private, works offline.',
-        urlPath: 'convert/jpg/', depth: 2, body,
+        urlPath: 'convert/jpg/', depth: 2, body, jsonld: toolPageLd('Convert image to JPG', 'convert/jpg/'),
       }),
     });
   }
@@ -616,7 +672,7 @@ ${examLinks(up)}
 </div>`;
     pages.push({
       urlPath, depth,
-      html: layout({ title: `${t.title} | ${site.name}`, description: t.desc, urlPath, depth, body, scripts: ['assets/pdf.js'] }),
+      html: layout({ title: `${t.title} | ${site.name}`, description: t.desc, urlPath, depth, body, scripts: ['assets/pdf.js'], jsonld: toolPageLd(enOf(t.h1), urlPath) }),
     });
   }
 }

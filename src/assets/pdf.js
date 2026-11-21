@@ -121,6 +121,7 @@
       <label class="btn primary"><input type="file" accept="${accept}"${multi ? ' multiple' : ''} class="file-input f-gallery">${T.choose}</label>
       ${camera ? `<label class="btn"><input type="file" accept="image/*" capture="environment" class="file-input f-camera">${T.camera}</label>` : ''}
     </div>
+    <p class="muted small drop-hint">${h('or drop files here, or paste an image with Ctrl+V', 'या फ़ाइलें यहाँ छोड़ें, या Ctrl+V से इमेज पेस्ट करें')}</p>
     <p class="muted small">🔒 ${h('Your files are processed on this device. They are never uploaded.', 'आपकी फ़ाइलें इसी डिवाइस पर बनती हैं। इन्हें कहीं अपलोड नहीं किया जाता।')}</p>
     <div class="pw-box" hidden>
       <p class="pw-msg"></p>
@@ -291,6 +292,23 @@
   }
   $('.f-gallery').addEventListener('change', (e) => { const f = [...e.target.files]; e.target.value = ''; addFiles(f); });
   if (camera) $('.f-camera').addEventListener('change', (e) => { const f = [...e.target.files]; e.target.value = ''; addFiles(f); });
+
+  // Drag and drop (desktop) and paste from the clipboard.
+  const usable = (f) => /pdf/i.test(f.type + f.name) || (!TO_JPG && /^image\//.test(f.type));
+  const hasFiles = (e) => e.dataTransfer && [...e.dataTransfer.types].includes('Files');
+  el.addEventListener('dragover', (e) => { if (hasFiles(e)) { e.preventDefault(); el.classList.add('dropping'); } });
+  el.addEventListener('dragleave', (e) => { if (!el.contains(e.relatedTarget)) el.classList.remove('dropping'); });
+  el.addEventListener('drop', (e) => {
+    el.classList.remove('dropping');
+    const files = [...((e.dataTransfer && e.dataTransfer.files) || [])].filter(usable);
+    if (!files.length) return;
+    e.preventDefault();
+    addFiles(files);
+  });
+  document.addEventListener('paste', (e) => {
+    const files = [...((e.clipboardData && e.clipboardData.files) || [])].filter(usable);
+    if (files.length) { e.preventDefault(); addFiles(files); }
+  });
 
   // ---------------------------------------------------------------- page list
   function thumb(src) {

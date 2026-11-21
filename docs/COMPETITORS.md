@@ -58,6 +58,7 @@ using only its passive website observation, plus a normal browser.
 
 1. 40–60 more exam pages from verified notices (exam variants first: IBPS PO/Clerk/RRB/SO, SSC
    CGL/CHSL/MTS/GD, RRB NTPC/Group D/ALP, then state PSC and police exams).
-2. Exam picker, live-photo notice, estimated size, drag and drop.
-3. Structured data and FAQ sections.
+2. ~~Exam picker, live-photo notice, estimated size, drag and drop.~~ Done 21 Nov 2026 (plus paste,
+   cm/mm sizes and the paper-shadow tip).
+3. ~~Structured data and FAQ sections.~~ Done 21 Nov 2026 (WebApplication, BreadcrumbList, FAQPage).
 4. AdSense with a strict weight budget, once there is steady traffic.

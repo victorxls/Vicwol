@@ -161,7 +161,8 @@
           "maxKB": 500,
           "name": "10th-certificate"
         }
-      ]
+      ],
+      "live": "extra"
     },
     {
       "slug": "sbi",
@@ -235,7 +236,8 @@
         "date": "2026-11-20",
         "title": "SBI PO advertisement CRPD/PO/2026-27/09 and Junior Associates advertisement CRPD/CR/2026-27/17",
         "url": "https://sbi.bank.in/web/careers/current-openings"
-      }
+      },
+      "live": "extra"
     },
     {
       "slug": "ssc",
@@ -274,7 +276,8 @@
         "https://www.pw.live/ssc/exams/ssc-chsl-photo-and-signature-size",
         "https://www.practicemock.com/blog/ssc-cgl-signature-size-and-photo-rules/",
         "https://www.pw.live/ssc/exams/ssc-selection-post-phase-14-signature-upload-rules"
-      ]
+      ],
+      "live": "only"
     },
     {
       "slug": "rrb",
@@ -312,7 +315,8 @@
         "https://www.oliveboard.in/blog/rrb-ntpc-photo-and-signature-details/",
         "https://www.pw.live/railway/exams/rrb-ntpc-photo-and-signature-size",
         "https://www.adda247.com/exams/railway/documents-required-for-rrb-ntpc-2025-26/"
-      ]
+      ],
+      "live": "only"
     },
     {
       "slug": "upsc",
@@ -362,7 +366,8 @@
         "https://www.visionias.in/blog/upsc-news/upsc-new-photo-signature-rules-2026-dos-and-donts",
         "https://vajiramandravi.com/upsc-exam/upsc-photo-and-signature-guidelines/",
         "https://www.collegedekho.com/articles/upsc-photo-format-2026-jpg-specs-background-rules-gtat/"
-      ]
+      ],
+      "live": "extra"
     },
     {
       "slug": "neet-ug",
@@ -514,7 +519,8 @@
           "maxKB": 300,
           "name": "class-10-certificate"
         }
-      ]
+      ],
+      "live": "extra"
     },
     {
       "slug": "cuet-ug",
@@ -565,7 +571,8 @@
         "date": "2026-11-20",
         "title": "CUET (UG) 2026 Information Bulletin",
         "url": "https://cdnbbsr.s3waas.gov.in/s3d1a21da7bca4abff8b0b61b87597de73/uploads/2026/01/202601031633478370.pdf"
-      }
+      },
+      "live": "extra"
     },
     {
       "slug": "ctet",

@@ -403,6 +403,57 @@ async function runDoc(page, files, slug, d, i, multi) {
   await p2.waitForSelector('#pdftool .s-result:not([hidden])', { timeout: 120000 });
   await p2.screenshot({ path: path.join(OUT, 'shot-unlock.png'), fullPage: true });
   console.log('unlock under real CSP: ok');
+  // ---- borrowed ideas: exam picker, live notice, estimate, cm units, drag-drop, paste
+  await p2.goto(`${base}exam/ibps/#signature`);
+  if (!(await p2.isVisible('.live-note'))) fail('IBPS live-photo notice missing');
+  await p2.selectOption('.exam-select', 'sbi');
+  await p2.waitForURL(/exam\/sbi\/#signature$/);
+  await p2.waitForSelector('.tab.active');
+  if ((await p2.$eval('.tab.active', (t) => t.dataset.i)) !== '1') fail('exam picker did not keep the signature tab');
+  console.log('exam picker: IBPS -> SBI kept #signature');
+  await p2.goto(`${base}exam/ssc/`);
+  if (!/don’t upload a photo/.test(await p2.textContent('.live-note'))) fail('SSC live-only notice missing');
+  await p2.goto(`${base}exam/ibps/`);
+  await p2.setInputFiles('.f-gallery', files.photo);
+  await p2.waitForSelector('.s-edit:not([hidden])');
+  await p2.waitForFunction(() => /Expected file:.*200 × 230 px/.test(document.querySelector('.estimate').textContent), null, { timeout: 15000 });
+  console.log('estimate:', (await p2.textContent('.estimate')).replace(/\s+/g, ' ').trim().slice(0, 70));
+  // cm units on the custom page: 3.5 × 4.5 cm at 200 DPI = 276 × 354 px
+  await p2.goto(`${base}custom/`);
+  await p2.check('.adjust [name=unit][value=cm]');
+  await p2.fill('.adjust [name=w]', '3.5');
+  await p2.fill('.adjust [name=h]', '4.5');
+  await p2.dispatchEvent('.adjust [name=h]', 'change');
+  const cmSpec = await p2.textContent('.spec');
+  if (!/^276 × 354 px .*3\.5 × 4\.5 cm.*200 DPI/.test(cmSpec)) fail(`cm units not applied: "${cmSpec}"`);
+  console.log('cm units:', cmSpec);
+  // drag and drop a generated image onto the tool
+  await p2.evaluate(async () => {
+    const c = document.createElement('canvas'); c.width = 600; c.height = 800;
+    const x = c.getContext('2d'); x.fillStyle = '#9ab'; x.fillRect(0, 0, 600, 800); x.fillStyle = '#c96'; x.beginPath(); x.arc(300, 320, 150, 0, 7); x.fill();
+    const blob = await new Promise((r) => c.toBlob(r, 'image/jpeg', 0.9));
+    const dt = new DataTransfer(); dt.items.add(new File([blob], 'drop.jpg', { type: 'image/jpeg' }));
+    const tool = document.getElementById('tool');
+    tool.dispatchEvent(new DragEvent('dragover', { dataTransfer: dt, bubbles: true, cancelable: true }));
+    tool.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true }));
+  });
+  await p2.waitForSelector('.s-edit:not([hidden])', { timeout: 10000 });
+  await p2.click('.make');
+  await p2.waitForSelector('.s-result:not([hidden])');
+  const cmRes = await p2.$eval('.s-result', (r) => [r.dataset.w, r.dataset.h, r.dataset.ok]);
+  if (cmRes.join() !== '276,354,true') fail(`drop + cm result wrong: ${cmRes}`);
+  console.log('drag-and-drop + cm size result:', cmRes.join(' '));
+  // paste an image into the image-to-PDF tool
+  await p2.goto(`${base}pdf/merge/`);
+  await p2.evaluate(async () => {
+    const c = document.createElement('canvas'); c.width = 400; c.height = 300;
+    c.getContext('2d').fillRect(10, 10, 100, 100);
+    const blob = await new Promise((r) => c.toBlob(r, 'image/png'));
+    const dt = new DataTransfer(); dt.items.add(new File([blob], 'paste.png', { type: 'image/png' }));
+    document.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+  });
+  await p2.waitForFunction(() => document.querySelectorAll('#pdftool .pages .page').length === 1, null, { timeout: 15000 });
+  console.log('paste into PDF tool: 1 page added');
   await p2.waitForTimeout(500);
   const swOk = await p2.evaluate(async () => !!(await navigator.serviceWorker.getRegistration()));
   if (!swOk) fail('service worker not registered');

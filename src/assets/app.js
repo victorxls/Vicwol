@@ -68,8 +68,15 @@
     again: h('Use another image', 'दूसरी इमेज लें'),
     editAgain: h('Adjust again', 'फिर से एडजस्ट करें'),
     adjust: h('Change size limits', 'साइज़ की सीमा बदलें'),
-    width: h('Width (px)', 'चौड़ाई (px)'),
-    height: h('Height (px)', 'ऊँचाई (px)'),
+    width: `${h('Width', 'चौड़ाई')} (<span class="u">px</span>)`,
+    height: `${h('Height', 'ऊँचाई')} (<span class="u">px</span>)`,
+    unit: h('Size in', 'साइज़ की इकाई'),
+    exam: h('Exam', 'परीक्षा'),
+    expected: h('Expected file:', 'बनने वाली फ़ाइल:'),
+    drop: h('or drop an image here, or paste it with Ctrl+V', 'या इमेज यहाँ छोड़ें, या Ctrl+V से पेस्ट करें'),
+    shadowTip: h('Grey paper and phone shadows are a common reason forms reject signatures. This turns the paper pure white and makes the ink darker.', 'धूसर कागज़ और फ़ोन की परछाईं की वजह से अक्सर हस्ताक्षर रिजेक्ट होते हैं। यह विकल्प कागज़ को पूरी तरह सफ़ेद और स्याही को गहरा करता है।'),
+    liveExtra: h('This exam also takes a live photo with your camera during the application, in addition to the photo you upload.', 'इस परीक्षा में आवेदन के दौरान अपलोड की गई फ़ोटो के अलावा कैमरे से लाइव फ़ोटो भी ली जाती है।'),
+    liveOnly: h('This exam takes your photo live with the camera on its website, so you don’t upload a photo file. You still need the files below.', 'यह परीक्षा अपनी वेबसाइट पर कैमरे से लाइव फ़ोटो लेती है, इसलिए फ़ोटो फ़ाइल अपलोड नहीं करनी होती। नीचे दी गई फ़ाइलें फिर भी चाहिए।'),
     minKB: h('Minimum KB', 'न्यूनतम KB'),
     maxKB: h('Maximum KB', 'अधिकतम KB'),
     dpi: h('DPI (optional)', 'DPI (वैकल्पिक)'),
@@ -94,10 +101,13 @@
       i: 0, spec: null, src: null, work: null,
       VW: 0, VH: 0, dpr: 1, scale: 1, tx: 0, ty: 0, cover: 1, minScale: 1, maxScale: 6,
       clean: false, strength: 50, stamp: false, name: '', date: todayISO(),
-      urls: [], lastWrapW: 0,
+      urls: [], lastWrapW: 0, unit: 'px',
     };
 
     el.innerHTML = `
+      ${cfg.exams ? `<label class="exam-pick">${S.exam}<select class="exam-select">${cfg.exams.map((e) =>
+        `<option value="${esc(e.slug)}"${e.slug === cfg.slug ? ' selected' : ''}>${esc(e.name)}</option>`).join('')}</select></label>` : ''}
+      ${cfg.live ? `<p class="live-note">📷 ${cfg.live === 'only' ? S.liveOnly : S.liveExtra}</p>` : ''}
       ${docs.length > 1 ? `<div class="tabs" role="tablist">${docs.map((d, i) =>
         `<button type="button" role="tab" class="tab" data-i="${i}">${h(d.label.en, d.label.hi)}</button>`).join('')}</div>` : ''}
       <p class="spec"></p>
@@ -111,6 +121,11 @@
           <label>${S.dpi}<input type="number" inputmode="numeric" name="dpi" min="50" max="1200"></label>
           <label class="adj-side">${S.side}<input type="number" inputmode="numeric" name="side" min="100" max="4000"></label>
         </div>
+        <div class="row radios units">${S.unit}:
+          <label class="check"><input type="radio" name="unit" value="px" checked> px</label>
+          <label class="check"><input type="radio" name="unit" value="cm"> cm</label>
+          <label class="check"><input type="radio" name="unit" value="mm"> mm</label>
+        </div>
       </details>
       <div class="stage s-pick">
         <h3 class="step">${S.step1}</h3>
@@ -118,6 +133,7 @@
           <label class="btn primary"><input type="file" accept="image/*" class="file-input f-gallery">${S.gallery}</label>
           <label class="btn"><input type="file" accept="image/*" capture="environment" class="file-input f-camera">${S.camera}</label>
         </div>
+        <p class="muted small drop-hint">${S.drop}</p>
         <p class="muted small">🔒 ${S.privacy}</p>
         <p class="error" hidden></p>
       </div>
@@ -133,6 +149,7 @@
           <div class="opt-clean">
             <label class="check"><input type="checkbox" class="clean"> ${S.clean}</label>
             <label class="row strength-row">${S.strength}<input type="range" class="strength" min="0" max="100" value="50"></label>
+            <p class="muted small tip shadow-tip">${S.shadowTip}</p>
           </div>
           <div class="opt-stamp">
             <label class="check"><input type="checkbox" class="stamp"> ${S.stamp}</label>
@@ -142,6 +159,7 @@
             </div>
           </div>
         </div>
+        <p class="estimate small" aria-live="polite"></p>
         <div class="actions">
           <button type="button" class="btn primary make">${S.make}</button>
           <button type="button" class="btn ghost reset">${S.again}</button>
@@ -180,7 +198,9 @@
       st.clean = kind === 'scan';
       $('.clean').checked = st.clean;
       $('.strength-row').hidden = !st.clean;
+      $('.shadow-tip').hidden = !st.clean;
       $('.opt-clean').hidden = kind === 'photo';
+      $('.units').hidden = !!st.spec.free;
       $('.opt-stamp').hidden = kind === 'scan';
       st.stamp = false;
       $('.stamp').checked = false;
@@ -211,7 +231,11 @@
     function fillAdjust() {
       const s = st.spec;
       const set = (n, v) => { $(`.adjust [name=${n}]`).value = v == null ? '' : v; };
-      set('w', s.w); set('h', s.h); set('minKB', s.minKB); set('maxKB', s.maxKB); set('dpi', s.dpi); set('side', s.side);
+      const per = st.unit === 'cm' ? 2.54 : st.unit === 'mm' ? 25.4 : 0;
+      const show = (px) => (per ? Math.round(px / (s.dpi || 200) * per * 100) / 100 : px);
+      set('w', show(s.w)); set('h', show(s.h)); set('minKB', s.minKB); set('maxKB', s.maxKB); set('dpi', s.dpi); set('side', s.side);
+      el.querySelectorAll('.adjust .u').forEach((u) => { u.textContent = st.unit; });
+      el.querySelectorAll('.adjust [name=unit]').forEach((r) => { r.checked = r.value === st.unit; });
       ['w', 'h'].forEach((n) => { $(`.adjust [name=${n}]`).parentElement.hidden = !!s.free; });
       $('.adj-side').hidden = !s.free;
     }
@@ -230,6 +254,28 @@
       if (s.free) {
         const side = Math.round(v('side'));
         if (side >= 100 && side <= 4000) s.side = side;
+      } else if (inp.name === 'unit') {
+        st.unit = inp.value;
+        if (st.unit !== 'px' && !s.dpi) s.dpi = 200;
+        fillAdjust();
+        renderSpec();
+        return;
+      } else if (st.unit !== 'px') {
+        // physical size: keep cm/mm as typed, convert to pixels with the DPI
+        const per = st.unit === 'cm' ? 2.54 : 25.4;
+        const dpi = Math.round(v('dpi')) >= 50 ? Math.round(v('dpi')) : (s.dpi || 200);
+        const wu = v('w'), hu = v('h');
+        const w = Math.round(wu / per * dpi), hh = Math.round(hu / per * dpi);
+        if (w >= 20 && w <= 4000 && hh >= 20 && hh <= 4000) {
+          s.w = w; s.h = hh; s.dpi = dpi;
+          const mn = v('minKB'), mx = v('maxKB');
+          if (mx > 0 && mx <= 5000) { s.maxKB = mx; s.minKB = mn >= 0 && mn < mx ? mn : 0; }
+          s.size = `${fmtNum(wu)} × ${fmtNum(hu)} ${st.unit}`;
+          fillAdjust();
+          renderSpec();
+          if (st.work && !$('.s-edit').hidden) relayout();
+        }
+        return;
       } else {
         const w = Math.round(v('w')), hh = Math.round(v('h'));
         if (w >= 20 && w <= 4000) s.w = w;
@@ -390,6 +436,33 @@
         c.stroke();
         c.restore();
       }
+      scheduleEstimate();
+    }
+
+    // Expected size: one quick encode after the user stops adjusting.
+    let estTimer = 0, estToken = 0;
+    function scheduleEstimate() { clearTimeout(estTimer); estTimer = setTimeout(runEstimate, 450); }
+    async function runEstimate() {
+      if (!st.work || $('.s-edit').hidden) return;
+      const token = ++estToken;
+      const s = st.spec;
+      if (s.free) fitFree();
+      let size;
+      try { size = (await toJpeg(renderOutput(), 0.92)).size; } catch (e) { return; }
+      if (token !== estToken) return;
+      const { minB, maxB } = byteLimits(s.minKB, s.maxKB);
+      const dims = `${s.w} × ${s.h} px`;
+      let text;
+      if (size > maxB) {
+        text = s.free
+          ? h(`under ${fmtNum(s.maxKB)} KB (the image may be made a little smaller)`, `${fmtNum(s.maxKB)} KB से कम (इमेज थोड़ी छोटी की जा सकती है)`)
+          : h(`${dims}, compressed to just under ${fmtNum(s.maxKB)} KB`, `${dims}, ${fmtNum(s.maxKB)} KB से थोड़ा कम में कंप्रेस`);
+      } else if (size < minB) {
+        text = h(`${dims}, about ${fmtNum(s.minKB)} KB (raised to the minimum)`, `${dims}, लगभग ${fmtNum(s.minKB)} KB (न्यूनतम तक बढ़ाया गया)`);
+      } else {
+        text = h(`${dims}, about ${Math.round(size / 1024)} KB`, `${dims}, लगभग ${Math.round(size / 1024)} KB`);
+      }
+      $('.estimate').innerHTML = `${S.expected} ${text} <span class="ok-mark">✓</span>`;
     }
 
     // ---- gestures
@@ -457,6 +530,7 @@
     $('.clean').addEventListener('change', (e) => {
       st.clean = e.target.checked;
       $('.strength-row').hidden = !st.clean;
+      $('.shadow-tip').hidden = !st.clean;
       if (!st.src) return;
       recomputeWork();
       draw();
@@ -477,7 +551,7 @@
       if (st.work) relayout();
     });
     $('.s-date').value = st.date;
-    $('.s-name').addEventListener('input', (e) => { st.name = e.target.value; });
+    $('.s-name').addEventListener('input', (e) => { st.name = e.target.value; scheduleEstimate(); });
     $('.s-date').addEventListener('change', (e) => { st.date = e.target.value; });
 
     // ---- make the file
@@ -576,6 +650,30 @@
       relayout();
     });
     el.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => selectDoc(Number(t.dataset.i), true)));
+
+    const picker = $('.exam-select');
+    if (picker) {
+      picker.addEventListener('change', () => {
+        location.href = `${ROOT}exam/${encodeURIComponent(picker.value)}/${st.spec ? `#${st.spec.type}` : ''}`;
+      });
+    }
+
+    // Drag and drop (desktop) and paste from the clipboard.
+    const imageFrom = (list) => [...(list || [])].find((f) => /^image\//.test(f.type));
+    const hasFiles = (e) => e.dataTransfer && [...e.dataTransfer.types].includes('Files');
+    el.addEventListener('dragover', (e) => { if (hasFiles(e)) { e.preventDefault(); el.classList.add('dropping'); } });
+    el.addEventListener('dragleave', (e) => { if (!el.contains(e.relatedTarget)) el.classList.remove('dropping'); });
+    el.addEventListener('drop', (e) => {
+      el.classList.remove('dropping');
+      const f = e.dataTransfer && imageFrom(e.dataTransfer.files);
+      if (!f) return;
+      e.preventDefault();
+      loadFile(f);
+    });
+    document.addEventListener('paste', (e) => {
+      const f = e.clipboardData && imageFrom(e.clipboardData.files);
+      if (f && $('.s-result').hidden) { e.preventDefault(); loadFile(f); }
+    });
 
     // open the tab named in the URL hash (e.g. #signature)
     const fromHash = docs.findIndex((d) => '#' + d.type === location.hash);
@@ -846,6 +944,7 @@
 
   // ---------------------------------------------------------------- small utils
   function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+  function esc(v) { return String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
   function nextFrame() { return new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0))); }
   function pad2(n) { return String(n).padStart(2, '0'); }
   function todayISO() {
